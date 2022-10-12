@@ -1,8 +1,9 @@
-type object_phrase = string list
+type expression = string list
+
 
 type technique = 
     |Refl
-    |Rw of object_phrase
+    |Rw of expression
 
 let next_statement x y = 
   raise (Failure "unimplemented next statement")

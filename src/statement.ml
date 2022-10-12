@@ -1,6 +1,6 @@
 type t = {
   curr : string list; (** should be a stack*)
-  eqiv : (string * string) list;
+  equiv : (string * string) list;
 }
 
 type element =
@@ -9,3 +9,5 @@ type element =
     |Sub
     |Mul
     |Div
+
+    
