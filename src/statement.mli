@@ -1,19 +1,20 @@
-type t
+type stm
 (** The abstract type of values representing statements to prove. *)
 
-val make_stm : Expression.t * Expression.t -> (Expression.t * Expression.t) list -> t
+val make_stm :
+  Expression.t * Expression.t -> (Expression.t * Expression.t) list -> stm
 
-val string_of_stm : t -> string
-(** [string_of_stm t] is the string that [t] represents.*)
+val string_of_stm : stm -> string
+(** [string_of_stm stm] is the string that [stm] represents.*)
 
-val is_valid : t -> bool
-(** [is_valid t] is true if and only if the left and the right expression of 
-    statement [t] are same.*)
+val is_valid : stm -> bool
+(** [is_valid stm] is true if and only if the left and the right expression of
+    statement [stm] are same.*)
 
-val substitute : t -> string list -> t
-(** [substitute t e] is the statement after changing replacing [e] with its equivalent form
-    in [t]*)
+val substitute : stm -> string list -> stm
+(** [substitute stm e] is the statement after changing replacing [e] with its
+    equivalent form in [stm]*)
 
-val next_statement: t -> Technique.technique -> t
-(** [next_statement t tech] is the statement after applying technique [tech] to [t] *)
-
+val next_statement : stm -> Technique.technique -> stm
+(** [next_statement stm tech] is the statement after applying technique [tech]
+    to [stm] *)

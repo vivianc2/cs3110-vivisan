@@ -27,12 +27,12 @@ let infix_of_string str =
   in
   infix_of_string_helper str ""
 
-(** [compare_op c1 c2] is true if and only if c1 is an operation of lower 
-  priority than c2 *)
+(** [compare_op c1 c2] is true if and only if c1 is an operation of lower
+    priority than c2 *)
 let compare_op c1 c2 =
   match (c1, c2) with
   | '(', _ -> true
-  | ('+' | '-' ), ('*' | '/') -> true
+  | ('+' | '-'), ('*' | '/') -> true
   | _, _ -> false
 
 let exp_of_infix inf =
@@ -41,21 +41,21 @@ let exp_of_infix inf =
       match (c, sign_lst) with
       | ')', [] -> (exp, [])
       | ')', h :: t ->
-          if h = '(' then (exp, t) else update_exp (exp @ [Opr h]) t c
+          if h = '(' then (exp, t) else update_exp (exp @ [ Opr h ]) t c
       | _, [] -> (exp, [ c ])
       | _, h :: t ->
           if compare_op h c then (exp, c :: sign_lst)
-          else update_exp (exp @ [Opr h]) t c
+          else update_exp (exp @ [ Opr h ]) t c
     in
     match inf with
     | [] -> begin
         match sign_lst with
         | [] -> exp
-        | h :: t -> exp_of_infix_helper (exp @ [Opr h]) inf t
+        | h :: t -> exp_of_infix_helper (exp @ [ Opr h ]) inf t
       end
     | h :: t -> begin
         match h with
-        | Num n -> exp_of_infix_helper (exp @ [Num n]) t sign_lst
+        | Num n -> exp_of_infix_helper (exp @ [ Num n ]) t sign_lst
         | Opr c ->
             if c = '(' then exp_of_infix_helper exp t (c :: sign_lst)
             else
