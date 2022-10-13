@@ -86,4 +86,4 @@ let rec compare_exp post1 post2 =
   | [], [] -> true
   | _, [] -> false
   | [], _ -> false
-  | h1 :: t1, h2 :: t2 -> h1 = h2 || compare_exp t1 t2
+  | h1 :: t1, h2 :: t2 -> h1 = h2 && compare_exp t1 t2

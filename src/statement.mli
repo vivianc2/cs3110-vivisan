@@ -11,7 +11,7 @@ val is_valid : stm -> bool
 (** [is_valid stm] is true if and only if the left and the right expression of
     statement [stm] are same.*)
 
-val substitute : stm -> string list -> stm
+val substitute : stm -> Expression.t -> stm
 (** [substitute stm e] is the statement after changing replacing [e] with its
     equivalent form in [stm]*)
 
