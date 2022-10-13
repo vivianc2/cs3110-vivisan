@@ -1,13 +1,16 @@
+open Expression
+
 type t = {
-  curr : string list; (** should be a stack*)
-  equiv : (string * string) list;
+  curr : Expression.t * Expression.t;
+  equiv : (Expression.t * Expression.t) list;
 }
 
-type element =
-    |Num of int
-    |Add
-    |Sub
-    |Mul
-    |Div
+let make_stm x y = {curr = x; equiv = y}
 
-    
+let string_of_stm stm = (stm.curr |> fst |> string_of_exp) ^ "=" ^ (stm.curr |> snd |> string_of_exp)
+
+let is_valid stm = compare_exp (stm.curr |> fst) (stm.curr |> snd)
+
+let substitute a b = a
+
+let next_statement a b = a
