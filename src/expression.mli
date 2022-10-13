@@ -9,6 +9,9 @@ type t
 exception Malformed
 (** Raised when a malformed technique is parsed. *)
 
+val exp_of_string : string -> t
+(** [exp_of_stirng s] is the postfix expression of infix string [s]*)
+
 val string_of_exp : t -> string
 (** [string_of_exp t] is the infix string of postfix expression [t]*)
 
