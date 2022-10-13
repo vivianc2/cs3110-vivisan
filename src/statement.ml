@@ -1,4 +1,5 @@
 open Expression
+open Technique
 
 type stm = {
   curr : Expression.t * Expression.t;
@@ -24,7 +25,7 @@ let rec substitute_chunck lst e e_equiv =
 let rec substitute_helper lst e e_equiv =
   match (lst, e) with
   | a, [] -> a
-  | [], _ -> raise NotMatch
+  | [], _ -> []
   | h :: t, eh :: et ->
       if h = eh then
         try substitute_chunck lst e e_equiv
@@ -42,4 +43,14 @@ let substitute stm e =
         substitute_helper (snd stm.curr) e e_equiv );
   }
 
-let next_statement a b = a
+exception NotReflexive
+exception QED
+
+(** [next_statement stm tech] is the statement after applying technique [tech]
+    to [stm] *)
+let next_statement stm tech =
+  match tech with
+  | Refl ->
+      if compare_exp (fst stm.curr) (snd stm.curr) then raise QED
+      else raise NotReflexive
+  | Rw str -> substitute stm (str |> infix_of_string |> exp_of_infix)
