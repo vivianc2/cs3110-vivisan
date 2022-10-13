@@ -2,8 +2,8 @@ open Expression
 open Technique
 
 type stm = {
-  curr : Expression.t * Expression.t;
-  equiv : (Expression.t * Expression.t) list;
+  curr : t * t;
+  equiv : (t * t) list;
 }
 
 let make_stm x y = { curr = x; equiv = y }
