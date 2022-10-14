@@ -22,7 +22,7 @@ let rec play_game stm =
       print_endline "The expression to rewrite is not found! Please try again.";
       play_game stm
   | exception ShowHelp ->
-      print_endline "The equivalent expressions are:";
+      print_endline "The equivalent expressions that you know are:";
       print_endline ("\t" ^ string_of_equiv stm);
       play_game stm
   | exception NotReflexive ->
@@ -44,6 +44,8 @@ let main () =
   ANSITerminal.print_string [ ANSITerminal.red ] "\n\nWelcome to our prover!\n";
   print_endline
     "Valid operations include, technique: refl, rw [variable_name].\n";
+    print_endline "The equivalent expressions that you know are:";
+  print_endline ("\t" ^ string_of_equiv stm1);
   play_game stm1
 (* match read_line () with | exception End_of_file -> () | file_name ->
    play_game (data_dir_prefix ^ file_name ^ ".json") *)
