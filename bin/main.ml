@@ -31,6 +31,9 @@ let rec play_game stm =
   | exception QED ->
       print_endline "Q.E.D";
       exit 0
+  | exception Quit ->
+      print_endline "You quit the prover. See you next time~";
+      exit 0
   | new_stm -> play_game new_stm
 
 (* let input = raise (Failure "unfinished") let data_dir_prefix = "data" ^

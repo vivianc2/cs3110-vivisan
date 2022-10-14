@@ -3,10 +3,11 @@
 type technique =
   | Refl
   | Rw of string
-  | Help
 
 exception Empty
 exception Malformed
+exception ShowHelp
+exception Quit
 
 let parse str =
   let words =
@@ -21,5 +22,7 @@ let parse str =
       else if h = "refl" then
         if List.length t > 0 then raise Malformed else Refl
       else if h = "help" then
-        if List.length t > 0 then raise Malformed else Help
+        if List.length t > 0 then raise Malformed else raise ShowHelp
+      else if h = "quit" then
+        if List.length t > 0 then raise Malformed else raise Quit
       else raise Malformed

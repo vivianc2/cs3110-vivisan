@@ -4,7 +4,6 @@ type stm
 exception NotMatch
 exception NotReflexive
 exception QED
-exception ShowHelp
 
 val make_stm :
   Expression.t * Expression.t -> (Expression.t * Expression.t) list -> stm

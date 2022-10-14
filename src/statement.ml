@@ -61,7 +61,6 @@ let substitute stm exp =
 
 exception NotReflexive
 exception QED
-exception ShowHelp
 
 (** [next_statement stm tech] is the statement after applying technique [tech]
     to [stm] *)
@@ -71,4 +70,3 @@ let next_statement stm tech =
       if compare_exp (fst stm.curr) (snd stm.curr) then raise QED
       else raise NotReflexive
   | Rw str -> substitute stm (str |> exp_of_string)
-  | Help -> raise ShowHelp
