@@ -48,5 +48,32 @@ let expression_tests =
     test_string_of_exp "(1+(2+3)+(4))" t4 "((1+(2+3))+4)";
   ]
 
-let suite = "test suite for Prover" >::: List.flatten [ expression_tests ]
+(** [test_make_stm name x y expected_output] *)
+let test_make_stm (name : string) x y (expected_output : stm) : test =
+  name >:: fun _ -> assert_equal expected_output (make_stm x y)
+
+let test_string_of_equiv (name : string) stm (expected_output : string) : test =
+  name >:: fun _ -> assert_equal expected_output (string_of_equiv stm)
+
+let test_is_valid (name : string) stm (expected_output : bool) : test =
+  name >:: fun _ -> assert_equal expected_output (is_valid stm)
+
+let test_substitute (name : string) stm e (expected_output : stm) : test =
+  name >:: fun _ -> assert_equal expected_output (substitute stm e)
+
+let test_next_statement (name : string) stm tech (expected_output : stm) : test
+    =
+  name >:: fun _ -> assert_equal expected_output (next_statement stm tech)
+
+let statement_test = []
+
+let test_parse (name : string) str (expected_output : technique) : test =
+  name >:: fun _ -> assert_equal expected_output (parse str)
+
+let technique_test = []
+
+let suite =
+  "test suite for Prover"
+  >::: List.flatten [ expression_tests; statement_test; technique_test ]
+
 let _ = run_test_tt_main suite

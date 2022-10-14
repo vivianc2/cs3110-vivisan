@@ -42,8 +42,8 @@ let rec play_game stm =
 (** [main ()] prompts for the game to play, then starts it. *)
 let main () =
   ANSITerminal.print_string [ ANSITerminal.red ] "\n\nWelcome to our prover!\n";
-  (* print_endline "Please enter the name of the game file you want to
-     load.\n"; *)
+  print_endline
+    "Valid operations include, technique: refl, rw [variable_name].\n";
   play_game stm1
 (* match read_line () with | exception End_of_file -> () | file_name ->
    play_game (data_dir_prefix ^ file_name ^ ".json") *)
