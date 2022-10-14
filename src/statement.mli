@@ -1,6 +1,9 @@
 type stm
 (** The abstract type of values representing statements to prove. *)
 
+exception NotReflexive
+exception QED
+
 val make_stm :
   Expression.t * Expression.t -> (Expression.t * Expression.t) list -> stm
 

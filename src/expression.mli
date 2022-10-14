@@ -16,6 +16,9 @@ val infix_of_string : string -> t
 val exp_of_infix : t -> t
 (** [exp_of_infix s] is the postfix expression of infix [s]*)
 
+val exp_of_string : string -> t
+(** [infix_of_stirng s] is the postfix expression of string [s]*)
+
 val string_of_exp : t -> string
 (** [string_of_exp t] is the infix string of postfix expression [t]*)
 

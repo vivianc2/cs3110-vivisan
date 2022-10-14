@@ -65,9 +65,11 @@ let exp_of_infix inf =
   in
   exp_of_infix_helper [] inf []
 
-let string_of_exp post =
-  let rec infix_of_postfix_helper post inf =
-    match post with
+let exp_of_string str = str |> infix_of_string |> exp_of_infix
+
+let string_of_exp exp =
+  let rec infix_of_postfix_helper exp inf =
+    match exp with
     | [] -> inf
     | h :: t -> (
         match h with
@@ -79,7 +81,7 @@ let string_of_exp post =
                 infix_of_postfix_helper t
                   (("(" ^ z ^ String.make 1 c ^ y ^ ")") :: s)))
   in
-  infix_of_postfix_helper post [] |> List.fold_left (fun x y -> x ^ y) ""
+  infix_of_postfix_helper exp [] |> List.fold_left (fun x y -> x ^ y) ""
 
 let rec compare_exp post1 post2 =
   match (post1, post2) with
