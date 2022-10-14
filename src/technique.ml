@@ -3,6 +3,7 @@
 type technique =
   | Refl
   | Rw of string
+  | Help
 
 exception Empty
 exception Malformed
@@ -19,4 +20,6 @@ let parse str =
         else raise Malformed
       else if h = "refl" then
         if List.length t > 0 then raise Malformed else Refl
+      else if h = "help" then
+        if List.length t > 0 then raise Malformed else Help
       else raise Malformed

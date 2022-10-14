@@ -5,6 +5,7 @@
 type technique =
   | Refl
   | Rw of string
+  | Help
       (** The type [technique] represents a user command that is decomposed into
           a verb and possibly an expression. Invariant: the [object_phrase]
           carried by [Go] must not be empty. *)

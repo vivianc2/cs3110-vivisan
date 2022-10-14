@@ -1,14 +1,20 @@
 type stm
 (** The abstract type of values representing statements to prove. *)
 
+exception NotMatch
 exception NotReflexive
 exception QED
+exception ShowHelp
 
 val make_stm :
   Expression.t * Expression.t -> (Expression.t * Expression.t) list -> stm
 
 val string_of_stm : stm -> string
 (** [string_of_stm stm] is the string that [stm] represents.*)
+
+val string_of_equiv : stm -> string
+(** [string_of_equiv stm] is the string that represents the equivalent
+    expressions in [stm].*)
 
 val is_valid : stm -> bool
 (** [is_valid stm] is true if and only if the left and the right expression of

@@ -1,7 +1,7 @@
 open Prover
-open Statement
 open Expression
 open Technique
+open Statement
 
 (* These should probably be put into a seperate file *)
 let t1 = exp_of_string "3*y"
@@ -14,8 +14,17 @@ let stm1 = make_stm (t1, t2) [ (t3, t4) ]
 let rec play_game stm =
   print_endline (string_of_stm stm);
   print_string "> ";
-  let input = parse (read_line ()) in
-  match next_statement stm input with
+  match next_statement stm (parse (read_line ())) with
+  | exception Malformed ->
+      print_endline "Your command is malformed! Please try again.";
+      play_game stm
+  | exception NotMatch ->
+      print_endline "The expression to rewrite is not found! Please try again.";
+      play_game stm
+  | exception ShowHelp ->
+      print_endline "The equivalent expressions are:";
+      print_endline ("\t" ^ string_of_equiv stm);
+      play_game stm
   | exception NotReflexive ->
       print_endline "The expression is not reflexive! Please try again.";
       play_game stm
