@@ -41,8 +41,6 @@ let rec substitute_helper lst exp equiv_exp =
         with NotMatch -> h :: substitute_helper t exp equiv_exp
       else h :: substitute_helper t exp equiv_exp
 
-(** [substitute stm e] is the statement after changing replacing [e] with its
-    equivalent form in [stm]*)
 let substitute stm exp =
   let sub_stm stm equiv_exp =
     {
@@ -62,8 +60,6 @@ let substitute stm exp =
 exception NotReflexive
 exception QED
 
-(** [next_statement stm tech] is the statement after applying technique [tech]
-    to [stm] *)
 let next_statement stm tech =
   match tech with
   | Refl ->
