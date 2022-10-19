@@ -4,11 +4,26 @@ open Technique
 open Statement
 
 (* These should probably be put into a seperate file *)
-let t1 = exp_of_string "3*y"
-let t2 = exp_of_string "3*(x+3)"
-let t3 = exp_of_string "y"
-let t4 = exp_of_string "x+3"
-let stm1 = make_stm (t1, t2) [ (t3, t4) ]
+let count = ref 0
+
+let next () =
+  count := !count + 1;
+  !count
+
+let stm1 =
+  make_stm
+    (exp_of_string "3*y", exp_of_string "3*(x+3)")
+    [ (exp_of_string "y", exp_of_string "x+3") ]
+
+let stm2 =
+  make_stm
+    (exp_of_string "y*z", exp_of_string "(x+2)*(x+3)")
+    [
+      (exp_of_string "y", exp_of_string "x+2");
+      (exp_of_string "z", exp_of_string "x+3");
+    ]
+
+let stm_lst = [ stm1; stm2 ]
 
 (** [play_game f] starts the adventure in file [f]. *)
 let rec play_game stm =
@@ -28,27 +43,33 @@ let rec play_game stm =
   | exception NotReflexive ->
       print_endline "The expression is not reflexive! Please try again.";
       play_game stm
-  | exception QED ->
-      print_endline "Q.E.D";
-      exit 0
+  | exception QED -> print_endline "Q.E.D"
+  (* exit 0 *)
   | exception Quit ->
       print_endline "You quit the prover. See you next time~";
       exit 0
   | new_stm -> play_game new_stm
 
-(* let input = raise (Failure "unfinished") let data_dir_prefix = "data" ^
-   Filename.dir_sep *)
+let rec go_through_stm stm_lst =
+  match stm_lst with
+  | [] ->
+      print_endline "You've finished all the proofs. Great job!";
+      exit 0
+  | h :: t -> (
+      print_endline ("Level " ^ string_of_int (next ()));
+      print_endline "The equivalent expressions that you know are:";
+      print_endline ("\t" ^ string_of_equiv h);
+      match play_game h with
+      | exception Retry -> play_game h
+      | _ -> go_through_stm t)
+(* go_through_stm t *)
 
 (** [main ()] prompts for the game to play, then starts it. *)
 let main () =
   ANSITerminal.print_string [ ANSITerminal.red ] "\n\nWelcome to our prover!\n";
   print_endline
-    "Valid operations include, technique: refl, rw [variable_name].\n";
-    print_endline "The equivalent expressions that you know are:";
-  print_endline ("\t" ^ string_of_equiv stm1);
-  play_game stm1
-(* match read_line () with | exception End_of_file -> () | file_name ->
-   play_game (data_dir_prefix ^ file_name ^ ".json") *)
+    "Valid operations include thses techniques: refl, rw [variable_name].\n";
+  go_through_stm stm_lst
 
 (* Execute the game engine. *)
 let () = main ()
