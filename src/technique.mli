@@ -20,6 +20,7 @@ exception ShowHelp
 (** Raised xxx. *)
 
 exception Quit
+exception Retry
 
 val parse : string -> technique
 (** [parse str] parses a player's input into a [technique].*)
