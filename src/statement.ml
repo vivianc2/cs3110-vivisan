@@ -66,3 +66,4 @@ let next_statement stm tech =
       if compare_exp (fst stm.curr) (snd stm.curr) then raise QED
       else raise NotReflexive
   | Rw str -> substitute stm (str |> exp_of_string)
+  | Ind strlst -> raise QED
