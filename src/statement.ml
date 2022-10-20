@@ -154,7 +154,7 @@ let rec find_zero x before_h =
 
 let zero_add stm =
   match stm.curr with
-  | [], [] -> stm
+  | [] -> stm
   | (a, b) :: t -> (
       match find_zero a [] with
       | true, e -> { stm with curr = (e, b) :: t }
