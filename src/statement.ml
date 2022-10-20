@@ -59,10 +59,61 @@ let substitute stm exp =
 
 exception NotReflexive
 exception QED
+exception NotZeroAddPattern
+exception NotZeroMulPattern
+
+(* [same_list x y] can check whether 0+ is the sublist of both side of
+   stm.curr *)
+let rec same_list x y =
+  match (x, y) with
+  | [], _ -> true
+  | _, [] -> false
+  | h :: t, h' :: t' -> h = h' && same_list t t'
+
+(* [sublist x y acc] returns whether stm contains +0 or not, acc which is the
+   equivalent of y in y+0, and the part of stm after +0 *)
+let rec sublist x y acc =
+  match (x, y) with
+  | [], _ -> (true, acc, List.tl y)
+  | _, [] -> (false, acc, y)
+  | h :: _, h' :: t' ->
+      if h = h' && same_list x y then (true, List.rev acc, List.tl t')
+      else sublist x t' (h' :: acc)
+
+let add_zero stm =
+  let zero_exp = [ Num "0"; Opr '+' ] in
+  match stm.curr with
+  | [], [] -> stm (* not really necessary match with after check non-empty?*)
+  | a, b -> (
+      match sublist zero_exp a [] with
+      | true, zero_equiv, rest -> { stm with curr = (zero_equiv @ rest, b) }
+      | false, _, _ -> (
+          match sublist zero_exp b [] with
+          | true, zero_equiv, rest -> { stm with curr = (a, zero_equiv @ rest) }
+          | false, _, _ -> raise NotZeroAddPattern))
+
+let mul_zero stm =
+  let zero_exp = [ Num "0"; Opr '*' ] in
+  match stm.curr with
+  | [], [] -> stm (* not really necessary match with after check non-empty?*)
+  | a, b -> (
+      match sublist zero_exp a [] with
+      | true, zero_equiv, [] -> { stm with curr = ([ Num "0" ], b) }
+      | true, zero_equiv, rest ->
+          { stm with curr = (Num "0" :: Opr '+' :: rest, b) }
+      | false, _, _ -> (
+          match sublist zero_exp b [] with
+          | true, zero_equiv, [] -> { stm with curr = (a, [ Num "0" ]) }
+          | true, zero_equiv, rest -> { stm with curr = (a, Num "0" :: rest) }
+          | false, _, _ -> raise NotZeroMulPattern))
 
 let next_statement stm tech =
   match tech with
   | Refl ->
       if compare_exp (fst stm.curr) (snd stm.curr) then raise QED
       else raise NotReflexive
-  | Rw str -> substitute stm (str |> exp_of_string)
+  | Rw str -> (
+      match str with
+      | "add_zero" -> add_zero stm
+      | "mul_zero" -> mul_zero stm
+      | s -> substitute stm (str |> exp_of_string))
