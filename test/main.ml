@@ -80,6 +80,20 @@ let test_next_statement_exception (name : string) stm tech str : test =
   | "qed" -> assert_raises QED (fun () -> next_statement stm tech)
   | _ -> ()
 
+let test_add_zero (name : string) stm (expected_output : stm) : test =
+  name >:: fun _ ->
+  assert_equal expected_output (add_zero stm) ~printer:string_of_stm
+
+let test_add_zero_exception (name : string) stm : test =
+  name >:: fun _ -> assert_raises NotZeroAddPattern (fun () -> add_zero stm)
+
+let test_mul_zero (name : string) stm (expected_output : stm) : test =
+  name >:: fun _ ->
+  assert_equal expected_output (mul_zero stm) ~printer:string_of_stm
+
+let test_mul_zero_exception (name : string) stm : test =
+  name >:: fun _ -> assert_raises NotZeroMulPattern (fun () -> mul_zero stm)
+
 (* y=x+3 -> 3y = 3*(x+3) *)
 let curr_left_1 = [ Num "3"; Num "y"; Opr '*' ]
 let curr_right_1 = [ Num "3"; Num "x"; Num "3"; Opr '+'; Opr '*' ]
@@ -92,6 +106,48 @@ let e_2 = [ Num "y"; Num "1"; Opr '+' ]
 let curr_left_2 = [ Num "4"; Num "2"; Opr '*' ]
 let curr_right_2 = [ Num "4"; Num "2"; Opr '*' ]
 let stm_2 = make_stm (curr_left_2, curr_right_2) equiv_1
+
+(* 3 = 3+0 *)
+let curr_l_add_zero = [ Num "3" ]
+let curr_r_add_zero = [ Num "3"; Num "0"; Opr '+' ]
+let stm_add_zero = make_stm (curr_l_add_zero, curr_r_add_zero) equiv_1
+let stm_add_zero_1_1 = make_stm (curr_l_add_zero, curr_l_add_zero) equiv_1
+
+(* 3 = 0+3 *)
+let curr_r_add_zero_3 = [ Num "0"; Num "3"; Opr '+' ]
+
+(* 3 = 3*0 + 0 => 3*0 *)
+let curr_l_add_zero_4 = [ Num "3"; Num "0"; Opr '*'; Num "0"; Opr '+' ]
+let curr_r_add_zero_4 = [ Num "3"; Num "0"; Opr '*' ]
+
+(* 0 = 3*0 *)
+let curr_r_mul_zero_2_1 = [ Num "3"; Num "0"; Opr '*' ]
+let stm_mul_zero_2_1 = make_stm ([ Num "0" ], curr_r_mul_zero_2_1) equiv_1
+
+(* 1 = 3*0+1 *)
+let curr_r_add_zero_2 = [ Num "3"; Num "0"; Opr '*'; Num "1"; Opr '+' ]
+let stm_add_zero_2 = make_stm ([ Num "1" ], curr_r_add_zero_2) equiv_1
+
+(* 1 = 1*1+0*1+4*0 *)
+let curr_r_mul_zero_3 =
+  [
+    Num "1";
+    Num "1";
+    Opr '*';
+    Num "0";
+    Num "1";
+    Opr '*';
+    Opr '+';
+    Num "4";
+    Num "0";
+    Opr '*';
+    Opr '+';
+  ]
+
+let stm_mul_zero_3 = make_stm ([ Num "1" ], curr_r_mul_zero_3) equiv_1
+
+let stm_add_zero_2_2 =
+  make_stm ([ Num "1" ], [ Num "0"; Num "1"; Opr '+' ]) equiv_1
 
 let statement_test =
   [
@@ -106,6 +162,8 @@ let statement_test =
       e_2;
     test_next_statement "test next statement y=x+3 rw y" stm_1 (parse "rw y")
       stm_1_2;
+    test_next_statement "test next statement 3=3+0 rw add_zero" stm_add_zero
+      (parse "rw add_zero") stm_add_zero_1_1;
     test_next_statement_exception
       "test next statement exception 3y=3(x+3) refl -> not refl"
       (make_stm (curr_left_1, curr_right_1) equiv_1)
@@ -114,6 +172,28 @@ let statement_test =
       "test next statement exception 3y=3y refl -> qed"
       (make_stm (curr_left_1, curr_left_1) equiv_1)
       (parse "refl") "qed";
+    test_mul_zero "test mul zero 1=3*0+1 -> 1=0+1" stm_add_zero_2
+      stm_add_zero_2_2;
+    test_mul_zero "test mul zero 0=3*0 -> 0=0" stm_mul_zero_2_1
+      (make_stm ([ Num "0" ], [ Num "0" ]) equiv_1);
+    (* malform！！！！ *)
+    (* test_mul_zero "test mul zero 1 = 1*1+0*1+4*0 -> 1=1+0*1+0" stm_mul_zero_3
+       (make_stm ( [ Num "1" ], [ Num "1"; Num "0"; Num "1"; Opr '*'; Opr '+';
+       Num "0"; Opr '+' ] ) equiv_1); *)
+    (* malform above！！！！ *)
+    test_add_zero "test add zero 3=3+0 -> 3=3" stm_add_zero stm_add_zero_1_1;
+    test_add_zero "test add zero 3+0=3+0 -> 3=3+0"
+      (make_stm (curr_r_add_zero, curr_r_add_zero) equiv_1)
+      stm_add_zero;
+    test_add_zero "test add zero 3=3*0+0 -> 3=3*0"
+      (make_stm (curr_l_add_zero, curr_l_add_zero_4) equiv_1)
+      (make_stm (curr_l_add_zero, curr_r_add_zero_4) equiv_1);
+    test_add_zero_exception "test add zero 3y=3*(x+3) -> not add_zero_pattern"
+      stm_1;
+    test_add_zero_exception "test add zero 3 = 3*0+1 -> not add_zero_pattern"
+      stm_add_zero_2;
+    test_add_zero_exception "test add zero 3 = 0+3 -> not add_zero_pattern"
+      (make_stm (curr_l_add_zero, curr_r_add_zero_3) equiv_1);
   ]
 
 let test_parse (name : string) str (expected_output : technique) : test =

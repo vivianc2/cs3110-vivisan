@@ -4,6 +4,8 @@ type stm
 exception NotMatch
 exception NotReflexive
 exception QED
+exception NotZeroAddPattern
+exception NotZeroMulPattern
 
 val make_stm :
   Expression.t * Expression.t -> (Expression.t * Expression.t) list -> stm
@@ -25,3 +27,11 @@ val substitute : stm -> Expression.t -> stm
 val next_statement : stm -> Technique.technique -> stm
 (** [next_statement stm tech] is the statement after applying technique [tech]
     to [stm] *)
+
+val add_zero : stm -> stm
+(** [add_zero stm] takes in statement [stm], returns equivalent stm that
+    replaces x+0 as x, if the result is false, then raise NotZeroAddPattern *)
+
+val mul_zero : stm -> stm
+(** [mul_zero stm] takes in statement [stm], returns equivalent stm that
+    replaces x*0 as 0+, if the result is false, then raise NotZeroAddPattern *)
