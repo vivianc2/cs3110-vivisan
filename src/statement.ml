@@ -61,6 +61,8 @@ exception NotReflexive
 exception QED
 exception NotZeroAddPattern
 exception NotZeroMulPattern
+exception NotAddZeroPattern
+exception NotMulZeroPattern
 
 (* [same_list x y] can check whether 0+ is the sublist of both side of
    stm.curr *)
@@ -90,7 +92,7 @@ let add_zero stm =
       | false, _, _ -> (
           match sublist zero_exp b [] with
           | true, zero_equiv, rest -> { stm with curr = (a, zero_equiv @ rest) }
-          | false, _, _ -> raise NotZeroAddPattern))
+          | false, _, _ -> raise NotAddZeroPattern))
 
 let mul_zero stm =
   let zero_exp = [ Num "0"; Opr '*' ] in
@@ -105,7 +107,55 @@ let mul_zero stm =
           match sublist zero_exp b [] with
           | true, zero_equiv, [] -> { stm with curr = (a, [ Num "0" ]) }
           | true, zero_equiv, rest -> { stm with curr = (a, Num "0" :: rest) }
-          | false, _, _ -> raise NotZeroMulPattern))
+          | false, _, _ -> raise NotMulZeroPattern))
+
+let rec opr_counter count_num count_opr = function
+  | [] -> (count_num, count_opr)
+  | Num _ :: t -> opr_counter (count_num + 1) count_opr t
+  | Opr _ :: t -> opr_counter count_num (count_opr + 1) t
+
+let counter_condition = function
+  | count_num, count_opr -> count_num = count_opr + 1
+
+let rec find_add (x : Expression.t) (acc : Expression.t) (before : Expression.t)
+    =
+  match x with
+  | [] -> (false, acc, before)
+  | h :: t ->
+      if h = Opr '+' && opr_counter 0 0 (List.rev acc) |> counter_condition then
+        (true, List.rev acc, before)
+      else find_add t (h :: acc) before
+
+let rec find_zero x before_h =
+  (* y represents the part before we find a match with 0*)
+  match x with
+  | [] -> (false, [])
+  | h :: t ->
+      if h = Num "0" then
+        if before_h = [] then
+          match find_add t [] [] with
+          | false, _, _ -> (false, [])
+          | true, rest, before -> (true, rest)
+        else
+          match find_add (List.tl t) [] (List.rev before_h) with
+          | false, _, _ -> (false, [])
+          | true, rest, before -> (true, before @ rest @ [ Opr '+' ])
+      else
+        let before = h :: before_h in
+        find_zero t before
+
+let zero_add stm =
+  match stm.curr with
+  | [], [] -> stm
+  | a, b -> (
+      match find_zero a [] with
+      | true, e -> { stm with curr = (e, b) }
+      | false, _ -> (
+          match find_zero b [] with
+          | true, e -> { stm with curr = (a, e) }
+          | false, _ -> raise NotZeroAddPattern))
+
+let zero_mul stm = stm
 
 let next_statement stm tech =
   match tech with
@@ -116,4 +166,6 @@ let next_statement stm tech =
       match str with
       | "add_zero" -> add_zero stm
       | "mul_zero" -> mul_zero stm
+      | "zero_add" -> zero_add stm
+      | "zero_mul" -> zero_mul stm
       | s -> substitute stm (str |> exp_of_string))

@@ -6,6 +6,8 @@ exception NotReflexive
 exception QED
 exception NotZeroAddPattern
 exception NotZeroMulPattern
+exception NotAddZeroPattern
+exception NotMulZeroPattern
 
 val make_stm :
   Expression.t * Expression.t -> (Expression.t * Expression.t) list -> stm
@@ -31,8 +33,23 @@ val next_statement : stm -> Technique.technique -> stm
 
 val add_zero : stm -> stm
 (** [add_zero stm] takes in statement [stm], returns equivalent stm that
-    replaces x+0 as x, if the result is false, then raise NotZeroAddPattern *)
+    replaces x+0 as x, if the result is false, then raise NotAddZeroPattern *)
+
+val zero_add : stm -> stm
+(** [zero_add stm] takes in statement [stm], returns equivalent stm that
+    replaces 0+x as x, if the result is false, then raise NotZeroAddPattern *)
 
 val mul_zero : stm -> stm
 (** [mul_zero stm] takes in statement [stm], returns equivalent stm that
-    replaces x*0 as 0+, if the result is false, then raise NotZeroAddPattern *)
+    replaces x*0 + y as 0+y or replaces x*0 with 0, if the result is false, then
+    raise NotMulZeroPattern *)
+
+val zero_mul : stm -> stm
+(** [zero_mul stm] takes in statement [stm], returns equivalent stm that
+    replaces 0*x + y as 0+y or replaces 0*x with 0, if the result is false, then
+    raise NotZeroMulPattern *)
+
+(* val find_zero : Expression.t -> Expression.t -> bool * Expression.t
+
+   val find_add : Expression.t -> Expression.t -> Expression.t -> bool *
+   Expression.t * Expression.t *)

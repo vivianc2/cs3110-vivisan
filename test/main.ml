@@ -85,14 +85,39 @@ let test_add_zero (name : string) stm (expected_output : stm) : test =
   assert_equal expected_output (add_zero stm) ~printer:string_of_stm
 
 let test_add_zero_exception (name : string) stm : test =
-  name >:: fun _ -> assert_raises NotZeroAddPattern (fun () -> add_zero stm)
+  name >:: fun _ -> assert_raises NotAddZeroPattern (fun () -> add_zero stm)
+
+let test_zero_add (name : string) stm (expected_output : stm) : test =
+  name >:: fun _ ->
+  assert_equal expected_output (zero_add stm) ~printer:string_of_stm
+
+let test_zero_add_exception (name : string) stm : test =
+  name >:: fun _ -> assert_raises NotZeroAddPattern (fun () -> zero_add stm)
 
 let test_mul_zero (name : string) stm (expected_output : stm) : test =
   name >:: fun _ ->
   assert_equal expected_output (mul_zero stm) ~printer:string_of_stm
 
 let test_mul_zero_exception (name : string) stm : test =
-  name >:: fun _ -> assert_raises NotZeroMulPattern (fun () -> mul_zero stm)
+  name >:: fun _ -> assert_raises NotMulZeroPattern (fun () -> mul_zero stm)
+
+(* test for helper function find_zero, find_add*)
+
+(* let print_test_tuple = function | true, b -> let str = "true" in str ^ " " ^
+   string_of_exp b | false, b -> let str = "false" in str ^ " " ^ string_of_exp
+   b
+
+   let print_test_tuple_2 = function | true, a, b -> let str = "true" in str ^ "
+   " ^ string_of_exp a | false, a, b -> let str = "false" in str ^ " " ^
+   string_of_exp a *)
+
+(* let test_find_zero (name : string) lst1 lst2 (expected_output : bool *
+   Expression.t) : test = name >:: fun _ -> assert_equal expected_output
+   (find_zero lst1 lst2) ~printer:print_test_tuple
+
+   let test_find_add (name : string) lst1 lst2 lst3 (expected_output : bool *
+   Expression.t * Expression.t) : test = name >:: fun _ -> assert_equal
+   expected_output (find_add lst1 lst2 lst3) ~printer:print_test_tuple_2 *)
 
 (* y=x+3 -> 3y = 3*(x+3) *)
 let curr_left_1 = [ Num "3"; Num "y"; Opr '*' ]
@@ -119,6 +144,12 @@ let curr_r_add_zero_3 = [ Num "0"; Num "3"; Opr '+' ]
 (* 3 = 3*0 + 0 => 3*0 *)
 let curr_l_add_zero_4 = [ Num "3"; Num "0"; Opr '*'; Num "0"; Opr '+' ]
 let curr_r_add_zero_4 = [ Num "3"; Num "0"; Opr '*' ]
+
+(* 7 = 4 + 3 + 0 => 7=4+3 *)
+let curr_l_add_zero_5 = [ Num "4"; Num "3"; Opr '+'; Num "0"; Opr '+' ]
+let curr_r_add_zero_5 = [ Num "4"; Num "3"; Opr '+' ]
+let stm_add_zero_3 = make_stm ([ Num "7" ], curr_l_add_zero_5) equiv_1
+let stm_add_zero_3_1 = make_stm ([ Num "7" ], curr_r_add_zero_5) equiv_1
 
 (* 0 = 3*0 *)
 let curr_r_mul_zero_2_1 = [ Num "3"; Num "0"; Opr '*' ]
@@ -181,6 +212,8 @@ let statement_test =
        (make_stm ( [ Num "1" ], [ Num "1"; Num "0"; Num "1"; Opr '*'; Opr '+';
        Num "0"; Opr '+' ] ) equiv_1); *)
     (* malform above！！！！ *)
+    test_add_zero "test add zero 7=4+3+0 -> 7=4+3" stm_add_zero_3
+      stm_add_zero_3_1;
     test_add_zero "test add zero 3=3+0 -> 3=3" stm_add_zero stm_add_zero_1_1;
     test_add_zero "test add zero 3+0=3+0 -> 3=3+0"
       (make_stm (curr_r_add_zero, curr_r_add_zero) equiv_1)
@@ -194,6 +227,47 @@ let statement_test =
       stm_add_zero_2;
     test_add_zero_exception "test add zero 3 = 0+3 -> not add_zero_pattern"
       (make_stm (curr_l_add_zero, curr_r_add_zero_3) equiv_1);
+    (* test for zero add*)
+    (* test_find_add "test find add +3 -> true" [ Num "3"; Opr '+' ] [] []
+       (true, [ Num "3" ], []); test_find_zero "test find zero 0+3 -> true"
+       curr_r_add_zero_3 [] (true, [ Num "3" ]); *)
+    test_zero_add "test zero add\n       0+3=3 -> 3 =3"
+      (make_stm (curr_r_add_zero_3, curr_l_add_zero) equiv_1)
+      stm_add_zero_1_1;
+    test_zero_add "test zero add\n 3=0+3 -> 3 =3"
+      (make_stm (curr_l_add_zero, curr_r_add_zero_3) equiv_1)
+      stm_add_zero_1_1;
+    (* test_find_zero "test find_zero 7, 4+0+3 -> true" [ Num "4"; Num "0"; Opr
+       '+'; Num "3"; Opr '+' ] [] (true, [ Num "4"; Num "3"; Opr '+' ]); *)
+    test_zero_add "test zero add 7=4+0+3 -> 7 =7"
+      (make_stm
+         ([ Num "7" ], [ Num "4"; Num "0"; Opr '+'; Num "3"; Opr '+' ])
+         equiv_1)
+      (make_stm ([ Num "7" ], [ Num "4"; Num "3"; Opr '+' ]) equiv_1);
+    (* test_find_add "test find\n add 3*5 [] [1] -> (true,3*5,1)" [ Num "3"; Num
+       "5"; Opr '*'; Opr '+' ] [] [ Num "1" ] (true, [ Num "3"; Num "5"; Opr '*'
+       ], [ Num "1" ]); test_find_zero "test find zero 16 1+0+3*5 -> true" [ Num
+       "1"; Num "0"; Opr '+'; Num "3"; Num "5"; Opr '*'; Opr '+' ] [] (true, [
+       Num "1"; Num "3"; Num "5"; Opr '*'; Opr '+' ]); *)
+    test_zero_add "test zero add\n       16=1+0+3*5 -> 16 =1+3*5"
+      (make_stm
+         ( [ Num "16" ],
+           [ Num "1"; Num "0"; Opr '+'; Num "3"; Num "5"; Opr '*'; Opr '+' ] )
+         equiv_1)
+      (make_stm
+         ([ Num "16" ], [ Num "1"; Num "3"; Num "5"; Opr '*'; Opr '+' ])
+         equiv_1);
+    (* test_find_zero "test find zero 16=3*5+0+1 -> true" [ Num "3"; Num "5";
+       Opr '*'; Num "0"; Opr '+'; Num "1"; Opr '+' ] [] (true, [ Num "3"; Num
+       "5"; Opr '*'; Num "1"; Opr '+' ]); *)
+    test_zero_add "test zero add 16=3*5+0+1 -> 16 =3*5+1"
+      (make_stm
+         ( [ Num "16" ],
+           [ Num "3"; Num "5"; Opr '*'; Num "0"; Opr '+'; Num "1"; Opr '+' ] )
+         equiv_1)
+      (make_stm
+         ([ Num "16" ], [ Num "3"; Num "5"; Opr '*'; Num "1"; Opr '+' ])
+         equiv_1);
   ]
 
 let test_parse (name : string) str (expected_output : technique) : test =
