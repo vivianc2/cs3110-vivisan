@@ -28,7 +28,15 @@ let stm3 =
       (exp_of_string "d", exp_of_string "y+z");
     ]
 
-let stm_lst = [ stm1; stm2; stm3 ]
+let stm4 =
+  make_stm
+    (exp_of_string "x+0", exp_of_string "x")
+    [
+      
+    ]
+    
+
+let stm_lst = [ stm1; stm2; stm3 ; stm4]
 
 (** [play_game f] starts the adventure in file [f]. *)
 let rec play_game stm =
