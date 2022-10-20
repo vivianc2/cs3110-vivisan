@@ -18,7 +18,7 @@ val string_of_equiv : stm -> string
 val is_empty : stm -> bool
 (** [is_empty stm] is true if and only if the [stm.curr] is empty*)
 
-val substitute : Expression.t * Expression.t -> Expression.t -> Expression.t * Expression.t
+val substitute : stm -> Expression.t -> stm
 (** [substitute stm e] is the statement after changing replacing [e] with its
     equivalent form in [stm]*)
 
