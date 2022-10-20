@@ -19,9 +19,8 @@ val string_of_equiv : stm -> string
 (** [string_of_equiv stm] is the string that represents the equivalent
     expressions in [stm].*)
 
-val is_valid : stm -> bool
-(** [is_valid stm] is true if and only if the left and the right expression of
-    statement [stm] are same.*)
+val is_empty : stm -> bool
+(** [is_empty stm] is true if and only if the [stm.curr] is empty*)
 
 val substitute : stm -> Expression.t -> stm
 (** [substitute stm e] is the statement after changing replacing [e] with its

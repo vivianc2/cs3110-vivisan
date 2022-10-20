@@ -2,17 +2,14 @@ open Expression
 open Technique
 
 type stm = {
-  curr : t * t;
+  curr : (t * t) list;
   equiv : (t * t) list;
 }
 
-let make_stm x y = { curr = x; equiv = y }
+let make_stm x y = { curr = [ x ]; equiv = y }
 
-let string_of_stm stm =
-  (stm.curr |> fst |> string_of_exp) ^ " = " ^ (stm.curr |> snd |> string_of_exp)
-
-let string_of_equiv stm =
-  stm.equiv
+let print_explist explst =
+  explst
   |> List.map (fun x ->
          (x |> fst |> string_of_exp)
          ^ " = "
@@ -20,7 +17,9 @@ let string_of_equiv stm =
          ^ "; ")
   |> List.fold_left ( ^ ) ""
 
-let is_valid stm = compare_exp (stm.curr |> fst) (stm.curr |> snd)
+let string_of_stm stm = print_explist stm.curr
+let string_of_equiv stm = print_explist stm.equiv
+let is_empty stm = stm.curr = []
 
 exception NotMatch
 
@@ -31,6 +30,8 @@ let rec substitute_chunk lst exp equiv_exp =
   | h :: t, eh :: et ->
       if h = eh then substitute_chunk t et equiv_exp else raise NotMatch
 
+(** [substitute_helper lst exp equiv_exp] is the lst with [exp] changed into
+    [equiv_exp]. *)
 let rec substitute_helper lst exp equiv_exp =
   match (lst, exp) with
   | l, [] -> l
@@ -43,12 +44,16 @@ let rec substitute_helper lst exp equiv_exp =
 
 let substitute stm exp =
   let sub_stm stm equiv_exp =
-    {
-      stm with
-      curr =
-        ( substitute_helper (fst stm.curr) exp equiv_exp,
-          substitute_helper (snd stm.curr) exp equiv_exp );
-    }
+    match stm.curr with
+    | [] -> stm
+    | h :: t ->
+        {
+          stm with
+          curr =
+            ( substitute_helper (fst h) exp equiv_exp,
+              substitute_helper (snd h) exp equiv_exp )
+            :: t;
+        }
   in
   match List.find (fun (x, _) -> compare_exp x exp) stm.equiv with
   | _, equiv_exp -> sub_stm stm equiv_exp
@@ -85,28 +90,31 @@ let rec sublist x y acc =
 let add_zero stm =
   let zero_exp = [ Num "0"; Opr '+' ] in
   match stm.curr with
-  | [], [] -> stm (* not really necessary match with after check non-empty?*)
-  | a, b -> (
+  | [] -> stm
+  | (a, b) :: t -> (
       match sublist zero_exp a [] with
-      | true, zero_equiv, rest -> { stm with curr = (zero_equiv @ rest, b) }
+      | true, zero_equiv, rest ->
+          { stm with curr = (zero_equiv @ rest, b) :: t }
       | false, _, _ -> (
           match sublist zero_exp b [] with
-          | true, zero_equiv, rest -> { stm with curr = (a, zero_equiv @ rest) }
+          | true, zero_equiv, rest ->
+              { stm with curr = (a, zero_equiv @ rest) :: t }
           | false, _, _ -> raise NotAddZeroPattern))
 
 let mul_zero stm =
   let zero_exp = [ Num "0"; Opr '*' ] in
   match stm.curr with
-  | [], [] -> stm (* not really necessary match with after check non-empty?*)
-  | a, b -> (
+  | [] -> stm
+  | (a, b) :: t -> (
       match sublist zero_exp a [] with
-      | true, zero_equiv, [] -> { stm with curr = ([ Num "0" ], b) }
+      | true, zero_equiv, [] -> { stm with curr = ([ Num "0" ], b) :: t }
       | true, zero_equiv, rest ->
-          { stm with curr = (Num "0" :: Opr '+' :: rest, b) }
+          { stm with curr = (Num "0" :: Opr '+' :: rest, b) :: t }
       | false, _, _ -> (
           match sublist zero_exp b [] with
-          | true, zero_equiv, [] -> { stm with curr = (a, [ Num "0" ]) }
-          | true, zero_equiv, rest -> { stm with curr = (a, Num "0" :: rest) }
+          | true, zero_equiv, [] -> { stm with curr = (a, [ Num "0" ]) :: t }
+          | true, zero_equiv, rest ->
+              { stm with curr = (a, Num "0" :: rest) :: t }
           | false, _, _ -> raise NotMulZeroPattern))
 
 let rec opr_counter count_num count_opr = function
@@ -147,25 +155,48 @@ let rec find_zero x before_h =
 let zero_add stm =
   match stm.curr with
   | [], [] -> stm
-  | a, b -> (
+  | (a, b) :: t -> (
       match find_zero a [] with
-      | true, e -> { stm with curr = (e, b) }
+      | true, e -> { stm with curr = (e, b) :: t }
       | false, _ -> (
           match find_zero b [] with
-          | true, e -> { stm with curr = (a, e) }
+          | true, e -> { stm with curr = (a, e) :: t }
           | false, _ -> raise NotZeroAddPattern))
 
 let zero_mul stm = stm
 
 let next_statement stm tech =
-  match tech with
-  | Refl ->
-      if compare_exp (fst stm.curr) (snd stm.curr) then raise QED
-      else raise NotReflexive
-  | Rw str -> (
-      match str with
-      | "add_zero" -> add_zero stm
-      | "mul_zero" -> mul_zero stm
-      | "zero_add" -> zero_add stm
-      | "zero_mul" -> zero_mul stm
-      | s -> substitute stm (str |> exp_of_string))
+  match stm.curr with
+  | [] -> raise QED
+  | h :: t -> begin
+      match tech with
+      | Refl ->
+          if compare_exp (fst h) (snd h) then
+            if t = [] then raise QED else { stm with curr = t }
+          else raise NotReflexive
+      | Rw str -> begin
+          match str with
+          | "add_zero" -> add_zero stm
+          | "mul_zero" -> mul_zero stm
+          | s -> substitute stm (str |> exp_of_string)
+        end
+      | Ind strlst ->
+          let var_exp = exp_of_string (List.nth strlst 0) in
+          let d_exp = exp_of_string (List.nth strlst 1) in
+          let d_succ_exp = exp_of_string (List.nth strlst 1 ^ "+1") in
+          let hd = List.nth strlst 2 in
+          let zero = exp_of_string "0" in
+          let base =
+            ( substitute_helper (fst h) var_exp zero,
+              substitute_helper (snd h) var_exp zero )
+          in
+          let hd =
+            ( substitute_helper (fst h) var_exp d_exp,
+              substitute_helper (snd h) var_exp d_exp )
+          in
+          let hd_succ =
+            ( substitute_helper (fst h) var_exp d_succ_exp,
+              substitute_helper (snd h) var_exp d_succ_exp )
+          in
+          { curr = base :: hd_succ :: t; equiv = hd :: stm.equiv }
+    end
