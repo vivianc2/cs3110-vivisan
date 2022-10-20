@@ -62,11 +62,13 @@ exception QED
 
 let next_statement stm tech =
   match stm.curr with
-  | [] -> stm
+  | [] -> raise QED
   | h :: t -> begin
       match tech with
       | Refl ->
-          if compare_exp (fst h) (snd h) then {stm with curr = t}
+          if compare_exp (fst h) (snd h) then 
+            if t = [] then raise QED
+            else {stm with curr = t}
           else raise NotReflexive
       | Rw str -> substitute stm (str |> exp_of_string)
       | Ind strlst -> raise QED
