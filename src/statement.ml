@@ -2,17 +2,14 @@ open Expression
 open Technique
 
 type stm = {
-  curr : t * t;
+  curr : (t * t) list;
   equiv : (t * t) list;
 }
 
-let make_stm x y = { curr = x; equiv = y }
+let make_stm x y = { curr = [ x ]; equiv = y }
 
-let string_of_stm stm =
-  (stm.curr |> fst |> string_of_exp) ^ " = " ^ (stm.curr |> snd |> string_of_exp)
-
-let string_of_equiv stm =
-  stm.equiv
+let print_explist explst =
+  explst
   |> List.map (fun x ->
          (x |> fst |> string_of_exp)
          ^ " = "
@@ -20,7 +17,9 @@ let string_of_equiv stm =
          ^ "; ")
   |> List.fold_left ( ^ ) ""
 
-let is_valid stm = compare_exp (stm.curr |> fst) (stm.curr |> snd)
+let string_of_stm stm = print_explist stm.curr
+let string_of_equiv stm = print_explist stm.equiv
+let is_empty stm = stm.curr = []
 
 exception NotMatch
 
@@ -42,12 +41,13 @@ let rec substitute_helper lst exp equiv_exp =
       else h :: substitute_helper t exp equiv_exp
 
 let substitute stm exp =
-  let sub_stm stm equiv_exp =
-    {
-      stm with
+  let sub_stm stm equiv_exp = 
+    match stm.curr with
+    |[] -> stm
+    |h :: t-> {stm with
       curr =
-        ( substitute_helper (fst stm.curr) exp equiv_exp,
-          substitute_helper (snd stm.curr) exp equiv_exp );
+        ( substitute_helper (fst h) exp equiv_exp,
+          substitute_helper (snd h) exp equiv_exp ) :: t;
     }
   in
   match List.find (fun (x, _) -> compare_exp x exp) stm.equiv with
@@ -61,9 +61,13 @@ exception NotReflexive
 exception QED
 
 let next_statement stm tech =
-  match tech with
-  | Refl ->
-      if compare_exp (fst stm.curr) (snd stm.curr) then raise QED
-      else raise NotReflexive
-  | Rw str -> substitute stm (str |> exp_of_string)
-  | Ind strlst -> raise QED
+  match stm.curr with
+  | [] -> stm
+  | h :: t -> begin
+      match tech with
+      | Refl ->
+          if compare_exp (fst h) (snd h) then {stm with curr = t}
+          else raise NotReflexive
+      | Rw str -> substitute stm (str |> exp_of_string)
+      | Ind strlst -> raise QED
+    end

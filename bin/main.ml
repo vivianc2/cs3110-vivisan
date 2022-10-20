@@ -27,7 +27,8 @@ let stm_lst = [ stm1; stm2 ]
 
 (** [play_game f] starts the adventure in file [f]. *)
 let rec play_game stm =
-  print_endline (string_of_stm stm);
+  if is_empty stm then print_endline "Q.E.D"
+  else (print_endline (string_of_stm stm);
   print_string "> ";
   match next_statement stm (parse (read_line ())) with
   | exception Malformed ->
@@ -48,7 +49,7 @@ let rec play_game stm =
   | exception Quit ->
       print_endline "You quit the prover. See you next time~";
       exit 0
-  | new_stm -> play_game new_stm
+  | new_stm -> play_game new_stm)
 
 let rec go_through_stm stm_lst =
   match stm_lst with

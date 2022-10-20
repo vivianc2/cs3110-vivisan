@@ -58,8 +58,8 @@ let test_string_of_equiv (name : string) stm (expected_output : string) : test =
   name >:: fun _ ->
   assert_equal expected_output (string_of_equiv stm) ~printer:print_str
 
-let test_is_valid (name : string) stm (expected_output : bool) : test =
-  name >:: fun _ -> assert_equal expected_output (is_valid stm)
+(* let test_is_valid (name : string) stm (expected_output : bool) : test =
+  name >:: fun _ -> assert_equal expected_output (is_valid stm) *)
 
 let test_substitute (name : string) stm e (expected_output : stm) : test =
   name >:: fun _ ->
@@ -98,8 +98,8 @@ let statement_test =
     test_string_of_stm "test_string_of_stm 3y=3*(x+3)" stm_1 "(3*y) = (3*(x+3))";
     (* notice equiv will output a space after the string & also a ;*)
     test_string_of_equiv "test_string_of_equiv y = x+3 " stm_1 "y = (x+3); ";
-    test_is_valid "test_is_valid 3y=3*(x+3) -> false " stm_1 false;
-    test_is_valid "test_is_valid 2*4 = 2*4 -> false " stm_2 true;
+    (* test_is_valid "test_is_valid 3y=3*(x+3) -> false " stm_1 false;
+    test_is_valid "test_is_valid 2*4 = 2*4 -> false " stm_2 true; *)
     test_substitute "test substitute y=x+3 -> 3y = 3(x+3) " stm_1_1 e_1 stm_1_2;
     test_substitute_exception
       "test substitute exception y=x+3 -> 3y replace y+1 -> notmatch " stm_1_1
