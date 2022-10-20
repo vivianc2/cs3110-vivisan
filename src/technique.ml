@@ -15,7 +15,7 @@ let parse str =
     str |> String.split_on_char ' ' |> List.filter (fun s -> s <> "")
   in
   match words with
-  | [] -> raise Empty
+  | [] -> raise Malformed
   | h :: t ->
       if h = "rw" then
         if List.length t > 0 then Rw (List.fold_left ( ^ ) "" t)
