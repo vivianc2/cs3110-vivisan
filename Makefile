@@ -24,12 +24,12 @@ finalcheck:
 	@bash check.sh final
 
 zip:
-	rm -f final.zip
-	zip -r final.zip . -x@exclude.lst
+	rm -f vivisan.zip
+	zip -r vivisan.zip . -x@exclude.lst
 
 clean:
 	dune clean
-	rm -f final.zip
+	rm -f vivisan.zip
 
 doc:
 	dune build @doc
