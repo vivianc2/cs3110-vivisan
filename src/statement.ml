@@ -184,7 +184,6 @@ let next_statement stm tech =
           let var_exp = exp_of_string (List.nth strlst 0) in
           let d_exp = exp_of_string (List.nth strlst 1) in
           let d_succ_exp = exp_of_string (List.nth strlst 1 ^ "+1") in
-          let hd = List.nth strlst 2 in
           let zero = exp_of_string "0" in
           let base =
             ( substitute_helper (fst h) var_exp zero,
