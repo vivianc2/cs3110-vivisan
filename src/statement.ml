@@ -178,6 +178,8 @@ let next_statement stm tech =
           match str with
           | "add_zero" -> add_zero stm
           | "mul_zero" -> mul_zero stm
+          | "zero_add" -> zero_add stm
+          | "zero_mul" -> zero_mul stm
           | s -> substitute stm (str |> exp_of_string)
         end
       | Ind strlst ->
