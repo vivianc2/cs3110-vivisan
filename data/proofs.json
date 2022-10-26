@@ -1,0 +1,53 @@
+{
+    "proofs": [
+        {
+            "equation": {
+                "LHS": "3*y",
+                "RHS": "3*(x+3)"
+            },
+            "equals": [
+                {
+                    "LHS": "y",
+                    "RHS": "x+3"
+                }
+            ]
+        },
+        {
+            "equation": {
+                "LHS": "y*z",
+                "RHS": "(x+2)*(x+3)"
+            },
+            "equals": [
+                {
+                    "LHS": "y",
+                    "RHS": "x+2"
+                },
+                {
+                    "LHS": "z",
+                    "RHS": "x+3"
+                }
+            ]
+        },
+        {
+            "equation": {
+                "LHS": "a*(b+c)+d",
+                "RHS": "w*x+(y+z)"
+            },
+            "equals": [
+                {
+                    "LHS": "a",
+                    "RHS": "w"
+                },
+                {
+                    "LHS": "b+c",
+                    "RHS": "x"
+                },
+                {
+                    "LHS": "d",
+                    "RHS": "y+z"
+                }
+            ]
+        }
+    ],
+    "techniques": "TODO"
+}

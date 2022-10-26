@@ -1,4 +1,4 @@
 (library
  (name prover)
  (public_name Prover)
- (libraries ANSITerminal))
+ (libraries yojson ANSITerminal))
