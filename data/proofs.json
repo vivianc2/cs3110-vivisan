@@ -49,5 +49,5 @@
             ]
         }
     ],
-    "techniques": "TODO"
+    "techniques": "refl, rw [variable_name]"
 }
