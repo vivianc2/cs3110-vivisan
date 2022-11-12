@@ -129,14 +129,14 @@ let rec opr_counter count_num count_opr = function
 let counter_condition = function
   | count_num, count_opr -> count_num = count_opr + 1
 
-let rec find_add (x : Expression.t) (acc : Expression.t) (before : Expression.t)
-    =
+let rec find_opr (x : Expression.t) (bop : element) (acc : Expression.t)
+    (before : Expression.t) =
   match x with
   | [] -> (false, acc, before)
   | h :: t ->
-      if h = Opr '+' && opr_counter 0 0 (List.rev acc) |> counter_condition then
-        (true, List.rev acc, before)
-      else find_add t (h :: acc) before
+      if h = bop && opr_counter 0 0 (List.rev acc) |> counter_condition then
+        if bop = Opr '+' then (true, List.rev acc, before) else (true, t, before)
+      else find_opr t bop (h :: acc) before
 
 let rec find_zero x (bop : element) before_h =
   (* before_h represents the part before the '0'*)
@@ -146,11 +146,12 @@ let rec find_zero x (bop : element) before_h =
   | h :: t ->
       if h = Num "0" then
         if before_h = [] then
-          match find_add t [] [] with
+          match find_opr t bop [] [] with
           | false, _, _ -> (false, [])
           | true, rest, before -> (true, rest)
         else
-          match find_add (List.tl t) [] (List.rev before_h) with
+          (* match find_opr t bop [] (List.rev before_h) with *)
+          match find_opr (List.tl t) bop [] (List.rev before_h) with
           | false, _, _ -> (false, [])
           | true, rest, before -> (true, before @ rest @ [ Opr '+' ])
       else
@@ -168,30 +169,17 @@ let zero_add stm =
           | true, e -> { stm with curr = (a, e) :: t }
           | false, _ -> raise NotZeroAddPattern))
 
-let rec find_mul (x : Expression.t) (acc : Expression.t) (before : Expression.t)
-    =
-  match x with
-  | [] -> (false, acc, before)
-  | h :: t ->
-      if h = Opr '*' && opr_counter 0 0 (List.rev acc) |> counter_condition then
-        (true, t, before)
-      else find_mul t (h :: acc) before
-
 let rec find_zero_mul x (bop : element) before_h =
-  (* before_h represents the part before the '0'*)
-  (* y represents the part before we find a match with 0*)
   match x with
-  | [] ->
-      (* raise NotZeroMulPattern *)
-      (false, [])
+  | [] -> (false, [])
   | h :: t ->
       if h = Num "0" then
         if before_h = [] then
-          match find_mul t [] [] with
+          match find_opr t bop [] [] with
           | false, _, _ -> (false, [])
           | true, rest, before -> (true, Num "0" :: rest)
         else
-          match find_mul t [] (List.rev before_h) with
+          match find_opr t bop [] (List.rev before_h) with
           | false, _, _ -> (false, [])
           | true, rest, before -> (true, before @ [ Num "0" ] @ rest)
       else

@@ -123,30 +123,6 @@ let print_test_tuple_2 = function
       let str = "false" in
       str ^ " " ^ string_of_exp a
 
-let rec opr_counter count_num count_opr = function
-  | [] -> (count_num, count_opr)
-  | Num _ :: t -> opr_counter (count_num + 1) count_opr t
-  | Opr _ :: t -> opr_counter count_num (count_opr + 1) t
-
-let counter_condition = function
-  | count_num, count_opr -> count_num = count_opr + 1
-
-let rec find_mul (x : Expression.t) (acc : Expression.t) (before : Expression.t)
-    =
-  match x with
-  | [] -> (false, acc, before)
-  | h :: t ->
-      if h = Opr '*' && opr_counter 0 0 (List.rev acc) |> counter_condition then
-        (true, t, before)
-      else find_mul t (h :: acc) before
-
-let test_find_mul (name : string) (stm : Expression.t) (acc : Expression.t)
-    (before : Expression.t)
-    (expected_output : bool * Expression.t * Expression.t) : test =
-  name >:: fun _ ->
-  assert_equal expected_output (find_mul stm acc before)
-    ~printer:print_test_tuple_2
-
 (* let test_find_zero (name : string) lst1 lst2 (expected_output : bool *
    Expression.t) : test = name >:: fun _ -> assert_equal expected_output
    (find_zero lst1 lst2) ~printer:print_test_tuple *)
