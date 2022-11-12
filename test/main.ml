@@ -101,21 +101,57 @@ let test_mul_zero (name : string) stm (expected_output : stm) : test =
 let test_mul_zero_exception (name : string) stm : test =
   name >:: fun _ -> assert_raises NotMulZeroPattern (fun () -> mul_zero stm)
 
+let test_zero_mul (name : string) stm (expected_output : stm) : test =
+  name >:: fun _ ->
+  assert_equal expected_output (zero_mul stm) ~printer:string_of_stm
+
 (* test for helper function find_zero, find_add*)
 
-(* let print_test_tuple = function | true, b -> let str = "true" in str ^ " " ^
-   string_of_exp b | false, b -> let str = "false" in str ^ " " ^ string_of_exp
-   b
+let print_test_tuple = function
+  | true, b ->
+      let str = "true" in
+      str ^ " " ^ string_of_exp b
+  | false, b ->
+      let str = "false" in
+      str ^ " " ^ string_of_exp b
 
-   let print_test_tuple_2 = function | true, a, b -> let str = "true" in str ^ "
-   " ^ string_of_exp a | false, a, b -> let str = "false" in str ^ " " ^
-   string_of_exp a *)
+let print_test_tuple_2 = function
+  | true, a, b ->
+      let str = "true" in
+      str ^ "\n   " ^ string_of_exp a
+  | false, a, b ->
+      let str = "false" in
+      str ^ " " ^ string_of_exp a
+
+let rec opr_counter count_num count_opr = function
+  | [] -> (count_num, count_opr)
+  | Num _ :: t -> opr_counter (count_num + 1) count_opr t
+  | Opr _ :: t -> opr_counter count_num (count_opr + 1) t
+
+let counter_condition = function
+  | count_num, count_opr -> count_num = count_opr + 1
+
+let rec find_mul (x : Expression.t) (acc : Expression.t) (before : Expression.t)
+    =
+  match x with
+  | [] -> (false, acc, before)
+  | h :: t ->
+      if h = Opr '*' && opr_counter 0 0 (List.rev acc) |> counter_condition then
+        (true, t, before)
+      else find_mul t (h :: acc) before
+
+let test_find_mul (name : string) (stm : Expression.t) (acc : Expression.t)
+    (before : Expression.t)
+    (expected_output : bool * Expression.t * Expression.t) : test =
+  name >:: fun _ ->
+  assert_equal expected_output (find_mul stm acc before)
+    ~printer:print_test_tuple_2
 
 (* let test_find_zero (name : string) lst1 lst2 (expected_output : bool *
    Expression.t) : test = name >:: fun _ -> assert_equal expected_output
-   (find_zero lst1 lst2) ~printer:print_test_tuple
+   (find_zero lst1 lst2) ~printer:print_test_tuple *)
 
-   let test_find_add (name : string) lst1 lst2 lst3 (expected_output : bool *
+(* let test_find_add (name : string) lst1 lst2 lst3 (expected_output : bool *
    Expression.t * Expression.t) : test = name >:: fun _ -> assert_equal
    expected_output (find_add lst1 lst2 lst3) ~printer:print_test_tuple_2 *)
 
@@ -258,9 +294,6 @@ let statement_test =
       (make_stm
          ([ Num "16" ], [ Num "1"; Num "3"; Num "5"; Opr '*'; Opr '+' ])
          equiv_1);
-    (* test_find_zero "test find zero 16=3*5+0+1 -> true" [ Num "3"; Num "5";
-       Opr '*'; Num "0"; Opr '+'; Num "1"; Opr '+' ] [] (true, [ Num "3"; Num
-       "5"; Opr '*'; Num "1"; Opr '+' ]); *)
     test_zero_add "test zero add 16=3*5+0+1 -> 16 =3*5+1"
       (make_stm
          ( [ Num "16" ],
@@ -268,6 +301,62 @@ let statement_test =
          equiv_1)
       (make_stm
          ([ Num "16" ], [ Num "3"; Num "5"; Opr '*'; Num "1"; Opr '+' ])
+         equiv_1);
+    test_zero_mul "test zero mul 0*1=0 0=0"
+      (make_stm ([ Num "0"; Num "1"; Opr '*' ], [ Num "0" ]) equiv_1)
+      (make_stm ([ Num "0" ], [ Num "0" ]) equiv_1);
+    test_zero_mul "test zero mul 0*1+0=0 0=0"
+      (make_stm
+         ([ Num "0"; Num "1"; Opr '*'; Num "0"; Opr '+' ], [ Num "0" ])
+         equiv_1)
+      (make_stm ([ Num "0"; Num "0"; Opr '+' ], [ Num "0" ]) equiv_1);
+    test_zero_mul "test zero mul 0*1+1=1 0+1=1"
+      (make_stm
+         ([ Num "0"; Num "1"; Opr '*'; Num "1"; Opr '+' ], [ Num "1" ])
+         equiv_1)
+      (make_stm ([ Num "0"; Num "1"; Opr '+' ], [ Num "1" ]) equiv_1);
+    test_zero_mul "test zero mul 1+0*1+1=2 1+0+1=2"
+      (make_stm
+         ( [ Num "1"; Num "0"; Num "1"; Opr '*'; Opr '+'; Num "1"; Opr '+' ],
+           [ Num "2" ] )
+         equiv_1)
+      (make_stm
+         ([ Num "1"; Num "0"; Opr '+'; Num "1"; Opr '+' ], [ Num "2" ])
+         equiv_1);
+    test_zero_mul "test zero mul 3*5+0*1=16 -> 3*5+0=16"
+      (make_stm
+         ( [ Num "3"; Num "5"; Opr '*'; Num "0"; Num "1"; Opr '*'; Opr '+' ],
+           [ Num "16" ] )
+         equiv_1)
+      (make_stm
+         ([ Num "3"; Num "5"; Opr '*'; Num "0"; Opr '+' ], [ Num "16" ])
+         equiv_1);
+    test_zero_mul "test zero mul 16=3*5+0*1 -> 16 =3*5+0"
+      (make_stm
+         ( [ Num "16" ],
+           [ Num "3"; Num "5"; Opr '*'; Num "0"; Num "1"; Opr '*'; Opr '+' ] )
+         equiv_1)
+      (make_stm
+         ([ Num "16" ], [ Num "3"; Num "5"; Opr '*'; Num "0"; Opr '+' ])
+         equiv_1);
+    test_zero_mul "test zero mul 16=3*5+0*1*3 -> 16 =3*5+0*3"
+      (make_stm
+         ( [ Num "16" ],
+           [
+             Num "3";
+             Num "5";
+             Opr '*';
+             Num "0";
+             Num "1";
+             Opr '*';
+             Num "3";
+             Opr '*';
+             Opr '+';
+           ] )
+         equiv_1)
+      (make_stm
+         ( [ Num "16" ],
+           [ Num "3"; Num "5"; Opr '*'; Num "0"; Num "3"; Opr '*'; Opr '+' ] )
          equiv_1);
   ]
 

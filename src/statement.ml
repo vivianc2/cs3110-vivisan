@@ -117,11 +117,15 @@ let mul_zero stm =
               { stm with curr = (a, Num "0" :: rest) :: t }
           | false, _, _ -> raise NotMulZeroPattern))
 
+(** [opr_counter count_num count_opr] returns the number of number and operators
+    in one expressions*)
 let rec opr_counter count_num count_opr = function
   | [] -> (count_num, count_opr)
   | Num _ :: t -> opr_counter (count_num + 1) count_opr t
   | Opr _ :: t -> opr_counter count_num (count_opr + 1) t
 
+(** [counter_condition count_num count_opr] check whether the number of numbers
+    is one more than number of operator in one expression*)
 let counter_condition = function
   | count_num, count_opr -> count_num = count_opr + 1
 
@@ -134,7 +138,8 @@ let rec find_add (x : Expression.t) (acc : Expression.t) (before : Expression.t)
         (true, List.rev acc, before)
       else find_add t (h :: acc) before
 
-let rec find_zero x before_h =
+let rec find_zero x (bop : element) before_h =
+  (* before_h represents the part before the '0'*)
   (* y represents the part before we find a match with 0*)
   match x with
   | [] -> (false, [])
@@ -150,20 +155,61 @@ let rec find_zero x before_h =
           | true, rest, before -> (true, before @ rest @ [ Opr '+' ])
       else
         let before = h :: before_h in
-        find_zero t before
+        find_zero t bop before
 
 let zero_add stm =
   match stm.curr with
   | [] -> stm
   | (a, b) :: t -> (
-      match find_zero a [] with
+      match find_zero a (Opr '+') [] with
       | true, e -> { stm with curr = (e, b) :: t }
       | false, _ -> (
-          match find_zero b [] with
+          match find_zero b (Opr '+') [] with
           | true, e -> { stm with curr = (a, e) :: t }
           | false, _ -> raise NotZeroAddPattern))
 
-let zero_mul stm = stm
+let rec find_mul (x : Expression.t) (acc : Expression.t) (before : Expression.t)
+    =
+  match x with
+  | [] -> (false, acc, before)
+  | h :: t ->
+      if h = Opr '*' && opr_counter 0 0 (List.rev acc) |> counter_condition then
+        (true, t, before)
+      else find_mul t (h :: acc) before
+
+let rec find_zero_mul x (bop : element) before_h =
+  (* before_h represents the part before the '0'*)
+  (* y represents the part before we find a match with 0*)
+  match x with
+  | [] ->
+      (* raise NotZeroMulPattern *)
+      (false, [])
+  | h :: t ->
+      if h = Num "0" then
+        if before_h = [] then
+          match find_mul t [] [] with
+          | false, _, _ -> (false, [])
+          | true, rest, before -> (true, Num "0" :: rest)
+        else
+          match find_mul t [] (List.rev before_h) with
+          | false, _, _ -> (false, [])
+          | true, rest, before -> (true, before @ [ Num "0" ] @ rest)
+      else
+        let before = h :: before_h in
+        find_zero_mul t bop before
+
+let zero_mul stm =
+  match stm.curr with
+  | [] -> stm
+  | (a, b) :: t -> (
+      match find_zero_mul a (Opr '*') [] with
+      | true, e -> { stm with curr = (e, b) :: t }
+      | false, _ -> (
+          match find_zero_mul b (Opr '*') [] with
+          | true, e -> { stm with curr = (a, e) :: t }
+          | false, _ -> raise NotZeroMulPattern))
+
+(* let zero_mul stm = stm *)
 
 let next_statement stm tech =
   match stm.curr with
