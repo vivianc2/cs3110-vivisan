@@ -528,7 +528,10 @@ let t11 = [ Num "2"; Num "3"; Opr '*'; Num "3"; Opr '$'; Opr '+' ]
 let t11_1 = [ Num "2"; Num "3"; Opr '*'; Num "3"; Opr '+'; Opr '$' ]
 let stm_succ_3 = make_stm (t11, t11_1) equiv_1
 let stm_succ_31 = make_stm (t11_1, t11_1) equiv_1
+let t12 = [ Num "2"; Num "3"; Opr '$'; Opr '*' ]
+let stm_succ_4 = make_stm (t12, t12) equiv_1
 
+(* $2*2 *)
 let stm_not_succ =
   make_stm
     ( [ Num "16" ],
@@ -541,6 +544,7 @@ let succ_tests =
     test_add_succ "test_add_succ $2*3+$3 -> $(2*3)+$3" stm_succ_2 stm_succ_21;
     test_add_succ_exception "test_add_succ_exception 16=3*5+0*1" stm_not_succ;
     test_add_succ "test_add_succ 2*3+$3 -> $(2*3+3)" stm_succ_3 stm_succ_31;
+    test_add_succ_exception "test_add_succ_exception 2*$3" stm_succ_4;
   ]
 
 let test_parse (name : string) str (expected_output : technique) : test =

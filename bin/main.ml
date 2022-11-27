@@ -32,7 +32,9 @@ let rec play_game stm =
       print_endline "Your command is malformed! Please try again.";
       play_game stm
   | exception NotMatch ->
-      print_endline "The expression to rewrite is not found! Please try again.";
+      print_endline
+        "The expression to rewrite is not found or the function to rewrite has \
+         the wrong name! Please try again.";
       play_game stm
   | exception ShowHelp ->
       ANSITerminal.print_string [ ANSITerminal.Bold ]
@@ -42,33 +44,46 @@ let rec play_game stm =
         ("\t" ^ string_of_equiv stm ^ "\n");
       play_game stm
   | exception NotReflexive ->
-      print_endline "The expression is not reflexive! Please try again.";
+      print_endline "The expression is not reflexive!";
+      print_endline " Valid pattern: x=x, x+1 = x+1 and etc.";
+      print_endline "Please try again.";
       play_game stm
   | exception QED ->
       ANSITerminal.print_string
         [ ANSITerminal.red; ANSITerminal.Bold ]
         "\nQ.E.D\n\n"
   | exception NotAddZeroPattern ->
+      print_endline "The expression is not an add zero pattern!";
       print_endline
-        "The expression is not an add zero pattern! Please try again.";
+        "Valid pattern is 3+0 or (3+1)+0. Do you mean rw zero_add? Please try \
+         again.";
       play_game stm
   | exception NotMulZeroPattern ->
+      print_endline "The expression is not a multiply zero pattern!";
       print_endline
-        "The expression is not a multiply zero pattern! Please try again.";
+        "Valid pattern is 3*0, (3+1)*0 and etc. Do you mean rw zero_mul? \
+         Please try again.";
       play_game stm
   | exception NotZeroAddPattern ->
+      print_endline "The expression is not a zero add pattern!";
       print_endline
-        "The expression is not a zero add pattern! Please try again.";
+        "Valid pattern is 0+3 or 0+(3+1). Do you mean rw add_zero? Please try \
+         again.";
       play_game stm
   | exception NotZeroMulPattern ->
+      print_endline "The expression is not a zero multiply pattern!";
       print_endline
-        "The expression is not a zero multiply pattern! Please try again.";
+        "Valid pattern is 0*3 or 0*(3+1). Do you mean rw zero_mul? Please try \
+         again.";
       play_game stm
   | exception NotSuccPattern ->
-      print_endline "The expression is not a succ pattern! Please try again.";
+      print_endline
+        "The expression is not a succ addition pattern! Valid pattern is a + \
+         succ b = succ (a+b).";
+      print_endline "Please try again.";
       play_game stm
   | exception Quit ->
-      print_endline "You quit the prover. See you next time~";
+      print_endline "You have quit the prover. See you next time~";
       exit 0
   | new_stm -> play_game new_stm
 
@@ -110,7 +125,9 @@ let rec load_file f =
         "help, quit, retry\n\n";
       go_through_stm_lst (stm_lst_of_json json)
   | exception e -> (
-      print_endline "This file doesn't exist. Please enter the correct name.";
+      print_endline
+        "This input file doesn't exist. Please enter the correct file name \
+         again.";
       print_string "> ";
       match read_line () with
       | exception End_of_file -> ()
@@ -122,9 +139,12 @@ let main () =
     [ ANSITerminal.red; ANSITerminal.Bold ]
     "\n\nWelcome to Mathematical Prover!\n\n";
   print_endline "Please enter the name of the game file you want to load.\n";
+  print_endline "Files available: 1.proofs \n";
+  print_endline "If you want to quit the game, input quit";
   print_string "> ";
   match read_line () with
   | exception End_of_file -> ()
+  | "quit" -> exit 0
   | file_name -> load_file (data_dir_prefix ^ file_name ^ ".json")
 
 (* Execute the game engine. *)

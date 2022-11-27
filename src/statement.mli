@@ -9,6 +9,7 @@ exception NotZeroMulPattern
 exception NotAddZeroPattern
 exception NotMulZeroPattern
 exception NotSuccPattern
+exception NotSuccEqPattern
 
 val make_stm :
   Expression.t * Expression.t -> (Expression.t * Expression.t) list -> stm
@@ -53,6 +54,11 @@ val add_succ : stm -> stm
 (** [zero_mul stm] returns equivalent stm that replaces a+succ(b) as succ (a+b)
     with succ keyword represented as $. If the result is false, then raise
     NotAddSuccPattern *)
+
+val succ_eq : stm -> stm
+(** [succ_eq stm] returns the statement that replaces succ (n) with n+1 if n is
+    a natural number or expression about naturla number. Succ is represented
+    with char '$' *)
 
 (* val find_zero : Expression.t -> Expression.t -> bool * Expression.t
 

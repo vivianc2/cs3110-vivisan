@@ -69,6 +69,7 @@ exception NotZeroMulPattern
 exception NotAddZeroPattern
 exception NotMulZeroPattern
 exception NotSuccPattern
+exception NotSuccEqPattern
 
 (* [same_list x y] can check whether 0+ is the sublist of both side of
    stm.curr *)
@@ -217,6 +218,17 @@ let add_succ stm =
       else if found_right then
         { stm with curr = (add_succ_aux before_r rest_r, b) :: t }
       else raise NotSuccPattern
+
+let succ_eq stm =
+  match stm.curr with
+  | [] -> stm
+  | (a, b) :: t -> (
+      match find_opr a (Opr '$') [] [] with
+      | true, rest, before -> stm
+      | false, _, _ -> (
+          match find_opr a (Opr '$') [] [] with
+          | true, e, _ -> stm
+          | false, _, _ -> raise NotZeroAddPattern))
 
 (** succ_add (a b : mynat) : succ(a) + b = succ(a + b)*)
 let next_statement stm tech =
