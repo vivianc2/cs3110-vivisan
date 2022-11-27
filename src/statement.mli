@@ -8,6 +8,7 @@ exception NotZeroAddPattern
 exception NotZeroMulPattern
 exception NotAddZeroPattern
 exception NotMulZeroPattern
+exception NotSuccPattern
 
 val make_stm :
   Expression.t * Expression.t -> (Expression.t * Expression.t) list -> stm
@@ -47,6 +48,11 @@ val zero_mul : stm -> stm
 (** [zero_mul stm] takes in statement [stm], returns equivalent stm that
     replaces 0*x + y as 0+y or replaces 0*x with 0, if the result is false, then
     raise NotZeroMulPattern *)
+
+val add_succ : stm -> stm
+(** [zero_mul stm] returns equivalent stm that replaces a+succ(b) as succ (a+b)
+    with succ keyword represented as $. If the result is false, then raise
+    NotAddSuccPattern *)
 
 (* val find_zero : Expression.t -> Expression.t -> bool * Expression.t
 

@@ -126,6 +126,12 @@ let t6 =
     Opr '/';
   ]
 
+let t8 = [ Num "2"; Opr '$'; Num "3"; Opr '+' ]
+let t8_1 = [ Num "2"; Num "3"; Opr '+'; Opr '$' ]
+let t9 = [ Opr '$'; Num "2"; Opr '+'; Num "3" ]
+let t9_1 = [ Opr '$'; Opr '('; Num "2"; Opr '+'; Num "3"; Opr ')' ]
+let t10 = [ Num "2"; Opr '$'; Num "3"; Opr '*'; Num "3"; Opr '$'; Opr '+' ]
+
 let expression_tests =
   [
     test_infix_of_string "test_infix_of_string -> 2*(1+3)" "2*(1+3)" t1;
@@ -133,20 +139,28 @@ let expression_tests =
       t3;
     test_infix_of_string "test_infix_of_string -> (0/(((2+3)*4)+1))"
       "(0/(((2+3)*4)+1))" t7;
+    test_infix_of_string "test_infix_of_string -> $2+3" "$2+3" t9;
+    test_infix_of_string "test_infix_of_string -> $(2+3)" "$(2+3)" t9_1;
     (* error *)
     (* test_infix_of_string "test_infix_of_string empty -> []" "" []; *)
     test_exp_of_infix "test_exp_of_infix 2*(1+3)" t1 t2;
     test_exp_of_infix "test_exp_of_infix (1+(2+3)+(4))" t3 t4;
     (* error fixed *)
     test_exp_of_infix "test_exp_of_infix 0/((2+3)*4+1)" t5 t6;
+    test_exp_of_infix "test_exp_of_infix $ 2+3" t9 t8;
+    test_exp_of_infix "test_exp_of_infix $(2+3)" t9_1 t8_1;
     test_string_of_exp "test_string_of_exp t6 -> (0/(((2+3)*4)+1))" t6
       "(0/(((2+3)*4)+1))";
     test_string_of_exp "test_string_of_exp t2 -> 2*(1+3)" t2 "(2*(1+3))";
     test_string_of_exp "test_string_of_exp t4 -> (1+(2+3)+(4))" t4
       "((1+(2+3))+4)";
+    test_string_of_exp "test_string_of_exp t8 -> $2+3" t8 "(($2)+3)";
+    test_string_of_exp "test_string_of_exp t8_1 -> ($(2+3))" t8_1 "($(2+3))";
     test_exp_of_string "test_string_of_exp 0/((2+3)*4+1)" "0/((2+3)*4+1)" t6;
     test_exp_of_string "test_string_of_exp (0/(((2+3)*4)+1))"
       "(0/(((2+3)*4)+1))" t6;
+    test_exp_of_string "test_exp_of_string $2+3" "$2+3" t8;
+    test_exp_of_string "test_exp_of_string $2*3+$3" "$2*3+$3" t10;
     test_exp_of_string "test_string_of_exp (2*(1+3))" "(2*(1+3))" t2;
     test_exp_of_string "test_string_of_exp 2*(1+3)" "2*(1+3)" t2;
     test_exp_of_string "test_string_of_exp (1+(2+3)+(4))" "(1+(2+3)+(4))" t4;
@@ -221,6 +235,13 @@ let test_mul_zero_exception (name : string) stm : test =
 let test_zero_mul (name : string) stm (expected_output : stm) : test =
   name >:: fun _ ->
   assert_equal expected_output (zero_mul stm) ~printer:string_of_stm
+
+let test_add_succ (name : string) stm (expected_output : stm) : test =
+  name >:: fun _ ->
+  assert_equal expected_output (add_succ stm) ~printer:string_of_stm
+
+let test_add_succ_exception (name : string) stm : test =
+  name >:: fun _ -> assert_raises NotSuccPattern (fun () -> add_succ stm)
 
 (* test for helper function find_zero, find_add*)
 
@@ -491,6 +512,35 @@ let add_mul_zero_tests =
          ( [ Num "16" ],
            [ Num "3"; Num "5"; Opr '*'; Num "0"; Num "3"; Opr '*'; Opr '+' ] )
          equiv_1);
+  ]
+
+(* let t8 = [ Num "2"; Opr '$'; Num "3"; Opr '+' ] let t8_1 = [ Num "2"; Num
+   "3"; Opr '+'; Opr '$' ] *)
+let stm_succ_1 = make_stm (t8_1, t8) equiv_1
+let stm_succ_11 = make_stm (t8_1, t8_1) equiv_1
+
+(* let t10 = [ Num "2"; Opr '$'; Num "3"; Opr '*'; Num "3"; Opr '$'; Opr '+'
+   ] *)
+let t10_1 = [ Num "2"; Num "3"; Opr '*'; Opr '$'; Num "3"; Opr '$'; Opr '+' ]
+let stm_succ_2 = make_stm (t10, t10_1) equiv_1
+let stm_succ_21 = make_stm (t10_1, t10_1) equiv_1
+let t11 = [ Num "2"; Num "3"; Opr '*'; Num "3"; Opr '$'; Opr '+' ]
+let t11_1 = [ Num "2"; Num "3"; Opr '*'; Num "3"; Opr '+'; Opr '$' ]
+let stm_succ_3 = make_stm (t11, t11_1) equiv_1
+let stm_succ_31 = make_stm (t11_1, t11_1) equiv_1
+
+let stm_not_succ =
+  make_stm
+    ( [ Num "16" ],
+      [ Num "3"; Num "5"; Opr '*'; Num "0"; Num "1"; Opr '*'; Opr '+' ] )
+    equiv_1
+
+let succ_tests =
+  [
+    test_add_succ "test_add_succ $2+3 -> $(2+3)" stm_succ_1 stm_succ_11;
+    test_add_succ "test_add_succ $2*3+$3 -> $(2*3)+$3" stm_succ_2 stm_succ_21;
+    test_add_succ_exception "test_add_succ_exception 16=3*5+0*1" stm_not_succ;
+    test_add_succ "test_add_succ 2*3+$3 -> $(2*3+3)" stm_succ_3 stm_succ_31;
   ]
 
 let test_parse (name : string) str (expected_output : technique) : test =

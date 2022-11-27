@@ -68,6 +68,7 @@ exception NotZeroAddPattern
 exception NotZeroMulPattern
 exception NotAddZeroPattern
 exception NotMulZeroPattern
+exception NotSuccPattern
 
 (* [same_list x y] can check whether 0+ is the sublist of both side of
    stm.curr *)
@@ -100,9 +101,6 @@ let add_zero stm =
           | true, zero_equiv, rest ->
               { stm with curr = (a, zero_equiv @ rest) :: t }
           | false, _, _ -> raise NotAddZeroPattern))
-
-(** add_succ (a b : mynat) : a + succ(b) = succ(a + b)*)
-let add_succ stm1 stm2 = stm1
 
 let mul_zero stm =
   let zero_exp = [ Num "0"; Opr '*' ] in
@@ -200,8 +198,27 @@ let zero_mul stm =
           | true, e -> { stm with curr = (a, e) :: t }
           | false, _ -> raise NotZeroMulPattern))
 
-(* let zero_mul stm = stm *)
+(** add_succ (a b : mynat) : a + succ(b) = succ(a + b)*)
+let add_succ_aux stm1 stm2 = stm1 @ stm2 @ [ Opr '+'; Opr '$' ]
 
+(* let fst_three (h, _, _) = h *)
+
+let add_succ stm =
+  match stm.curr with
+  | [] -> stm
+  | (a, b) :: t ->
+      let found_left, rest, before = find_opr a (Opr '$') [] [] in
+      let found_right, rest_r, before_r = find_opr b (Opr '$') [] [] in
+      (* let check_pattern = function | [] | [_] -> (false, [], []) | Opr '$' ::
+         Opr '+' :: t -> (true, stm, stm) |_ -> (false, [], []) in *)
+      if found_left then
+        let new_succ = add_succ_aux before rest in
+        { stm with curr = (new_succ, b) :: t }
+      else if found_right then
+        { stm with curr = (add_succ_aux before_r rest_r, b) :: t }
+      else raise NotSuccPattern
+
+(** succ_add (a b : mynat) : succ(a) + b = succ(a + b)*)
 let next_statement stm tech =
   match stm.curr with
   | [] -> raise QED

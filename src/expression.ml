@@ -13,7 +13,7 @@ let infix_of_string str =
       if String.length curr > 0 then [ Num curr ] else []
     else
       match str.[0] with
-      | '+' | '-' | '*' | '/' | '(' | ')' ->
+      | '+' | '-' | '*' | '/' | '(' | ')' | '$' ->
           let tail =
             Opr str.[0]
             :: infix_of_string_helper
@@ -34,6 +34,7 @@ let compare_op c1 c2 =
   match (c1, c2) with
   | '(', _ -> true
   | ('+' | '-'), ('*' | '/') -> true
+  | _, '$' -> true
   | _, _ -> false
 
 (* expr not suppose to have Opr () *)
@@ -79,12 +80,16 @@ let string_of_exp exp =
         | Num n -> infix_of_postfix_helper t (n :: inf)
         | Opr c -> (
             match inf with
-            | [] | [ _ ] -> raise Malformed
+            | [] -> raise Malformed
+            | [ x ] ->
+                if c <> '$' then raise Malformed
+                else
+                  infix_of_postfix_helper t [ "(" ^ String.make 1 c ^ x ^ ")" ]
             | y :: z :: s ->
                 infix_of_postfix_helper t
                   (("(" ^ z ^ String.make 1 c ^ y ^ ")") :: s)))
   in
-  infix_of_postfix_helper exp [] |> List.fold_left (fun x y -> x ^ y) ""
+  infix_of_postfix_helper exp [] |> List.fold_left (fun acc x -> acc ^ x) ""
 
 let rec compare_exp post1 post2 =
   match (post1, post2) with
