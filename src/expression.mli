@@ -24,7 +24,8 @@ val string_of_exp : t -> string
 
 val compare_op : char -> char -> bool
 (** [compare_op c1 c2] is true if and only if c1 is an operation of lower
-    priority than c2 *)
+    priority than c2. Precondition: the only operations allowed to pass in is
+    '+' | '-' | '*' | '/' | '(' | ')' *)
 
 val compare_exp : t -> t -> bool
 (** [compare t1 t2] is true if and only if t1 and t2 are the same expression*)

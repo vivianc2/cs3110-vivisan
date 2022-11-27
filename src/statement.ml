@@ -19,7 +19,7 @@ let print_explist explst =
 
 let string_of_stm stm = print_explist stm.curr
 let string_of_equiv stm = print_explist stm.equiv
-let is_empty stm = stm.curr = []
+let is_empty stm = stm.curr = [] || stm.curr = [ ([], []) ]
 
 exception NotMatch
 
@@ -100,6 +100,9 @@ let add_zero stm =
           | true, zero_equiv, rest ->
               { stm with curr = (a, zero_equiv @ rest) :: t }
           | false, _, _ -> raise NotAddZeroPattern))
+
+(** add_succ (a b : mynat) : a + succ(b) = succ(a + b)*)
+let add_succ stm1 stm2 = stm1
 
 let mul_zero stm =
   let zero_exp = [ Num "0"; Opr '*' ] in

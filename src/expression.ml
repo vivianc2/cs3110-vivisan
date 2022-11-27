@@ -7,6 +7,7 @@ type t = element list
 exception Malformed
 
 let infix_of_string str =
+  (* if str = "" then [] else *)
   let rec infix_of_string_helper str curr =
     if String.length str = 0 then
       if String.length curr > 0 then [ Num curr ] else []
@@ -35,6 +36,7 @@ let compare_op c1 c2 =
   | ('+' | '-'), ('*' | '/') -> true
   | _, _ -> false
 
+(* expr not suppose to have Opr () *)
 let exp_of_infix inf =
   let rec exp_of_infix_helper exp inf sign_lst =
     let rec update_exp exp sign_lst c =
@@ -63,7 +65,8 @@ let exp_of_infix inf =
               exp_of_infix_helper new_exp t new_sign_lst
       end
   in
-  exp_of_infix_helper [] inf []
+  let e = exp_of_infix_helper [] inf [] in
+  List.filter (fun x -> x <> Opr '(') e
 
 let exp_of_string str = str |> infix_of_string |> exp_of_infix
 
