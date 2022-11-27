@@ -6,6 +6,7 @@ type stm = {
   equiv : (t * t) list;
 }
 
+let get_curr stm = stm.curr
 let make_stm x y = { curr = [ x ]; equiv = y }
 
 let print_explist explst =
@@ -124,6 +125,7 @@ let mul_zero stm =
 let rec opr_counter count_num count_opr = function
   | [] -> (count_num, count_opr)
   | Num _ :: t -> opr_counter (count_num + 1) count_opr t
+  | Opr '$' :: t -> opr_counter count_num count_opr t
   | Opr _ :: t -> opr_counter count_num (count_opr + 1) t
 
 (** [counter_condition count_num count_opr] check whether the number of numbers
@@ -200,37 +202,80 @@ let zero_mul stm =
           | false, _ -> raise NotZeroMulPattern))
 
 (** add_succ (a b : mynat) : a + succ(b) = succ(a + b)*)
-let add_succ_aux stm1 stm2 = stm1 @ stm2 @ [ Opr '+'; Opr '$' ]
+let add_succ_aux stm1 stm2 = stm1 @ stm2 @ [ Opr '$' ]
 
-(* let fst_three (h, _, _) = h *)
+let rec split_e e e1 e2 =
+  match e with
+  | [] -> (e1, e2)
+  | Num n :: t ->
+      let e1 = Num n :: e1 in
+      let e2 = List.tl e2 in
+      if
+        opr_counter 0 0 (List.rev e1) |> counter_condition
+        && not (opr_counter 0 0 (List.rev e2) |> counter_condition)
+      then (e1, e2)
+      else split_e t e1 e2
+  | Opr c :: t -> split_e t (Opr c :: e1) (List.tl e2)
+
+let rec find_add_succ e before =
+  match e with
+  | [] -> raise NotSuccPattern
+  | Opr '$' :: Opr '+' :: t ->
+      let e1, e2 = split_e before [] before in
+      List.rev e1 @ e2 @ (Opr '+' :: Opr '$' :: t)
+  | Num n :: t -> find_add_succ t (before @ [ Num n ])
+  | Opr c :: t -> find_add_succ t (before @ [ Opr c ])
 
 let add_succ stm =
   match stm.curr with
   | [] -> stm
-  | (a, b) :: t ->
-      let found_left, rest, before = find_opr a (Opr '$') [] [] in
-      let found_right, rest_r, before_r = find_opr b (Opr '$') [] [] in
-      (* let check_pattern = function | [] | [_] -> (false, [], []) | Opr '$' ::
-         Opr '+' :: t -> (true, stm, stm) |_ -> (false, [], []) in *)
-      if found_left then
-        let new_succ = add_succ_aux before rest in
-        { stm with curr = (new_succ, b) :: t }
-      else if found_right then
-        { stm with curr = (add_succ_aux before_r rest_r, b) :: t }
-      else raise NotSuccPattern
+  | (a, b) :: t -> { stm with curr = (find_add_succ a [], b) :: t }
+
+let rec find_succ_add e before =
+  match e with
+  | [] -> raise NotSuccPattern
+  | Opr '$' :: t ->
+      if List.(before |> rev |> hd) = Opr '*' then raise NotSuccPattern
+      else
+        let e1, e2 = split_e before [] before in
+        e1 @ e2 @ (List.hd t :: List.tl t) @ [ Opr '$' ]
+  | Num n :: t -> find_succ_add t (before @ [ Num n ])
+  | Opr c :: t -> find_succ_add t (before @ [ Opr c ])
+
+let succ_add stm =
+  match stm.curr with
+  | [] -> stm
+  | (a, b) :: t -> { stm with curr = (find_succ_add a [], b) :: t }
+
+(** succ n = n+1 *)
+let rec find_succ_n acc = function
+  | [] -> acc
+  | Opr c :: t ->
+      let acc = Opr c :: acc in
+      find_succ_n acc t
+  | Num n :: t ->
+      if opr_counter 0 0 (List.rev acc) |> counter_condition then acc
+      else
+        let acc = Num n :: acc in
+        find_succ_n acc t
+
+let replace_succ e = e @ [ Num "1"; Opr '+' ]
 
 let succ_eq stm =
   match stm.curr with
   | [] -> stm
   | (a, b) :: t -> (
       match find_opr a (Opr '$') [] [] with
-      | true, rest, before -> stm
+      | true, rest, before ->
+          let replaced = find_succ_n [] (List.rev before) |> replace_succ in
+          { stm with curr = (replaced @ rest, b) :: t }
       | false, _, _ -> (
           match find_opr a (Opr '$') [] [] with
-          | true, e, _ -> stm
+          | true, rest, before ->
+              let replaced = find_succ_n [] (List.rev before) |> replace_succ in
+              { stm with curr = (replaced @ rest, b) :: t }
           | false, _, _ -> raise NotZeroAddPattern))
 
-(** succ_add (a b : mynat) : succ(a) + b = succ(a + b)*)
 let next_statement stm tech =
   match stm.curr with
   | [] -> raise QED

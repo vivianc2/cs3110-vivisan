@@ -14,6 +14,8 @@ exception NotSuccEqPattern
 val make_stm :
   Expression.t * Expression.t -> (Expression.t * Expression.t) list -> stm
 
+val get_curr : stm -> (Expression.t * Expression.t) list
+
 val string_of_stm : stm -> string
 (** [string_of_stm stm] is the string that [stm] represents.*)
 
@@ -51,7 +53,12 @@ val zero_mul : stm -> stm
     raise NotZeroMulPattern *)
 
 val add_succ : stm -> stm
-(** [zero_mul stm] returns equivalent stm that replaces a+succ(b) as succ (a+b)
+(** [add_succ stm] returns equivalent stm that replaces a+succ(b) as succ (a+b)
+    with succ keyword represented as $. If the result is false, then raise
+    NotAddSuccPattern *)
+
+val succ_add : stm -> stm
+(** [succ_add stm] returns equivalent stm that replaces succ(a)+b as succ (a+b)
     with succ keyword represented as $. If the result is false, then raise
     NotAddSuccPattern *)
 

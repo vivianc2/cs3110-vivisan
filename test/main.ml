@@ -236,12 +236,30 @@ let test_zero_mul (name : string) stm (expected_output : stm) : test =
   name >:: fun _ ->
   assert_equal expected_output (zero_mul stm) ~printer:string_of_stm
 
+let print_stm_ele_list (stm : stm) =
+  let curr = get_curr stm in
+  List.map (fun (h, _) -> h) curr |> List.hd |> print_element_list
+
 let test_add_succ (name : string) stm (expected_output : stm) : test =
   name >:: fun _ ->
-  assert_equal expected_output (add_succ stm) ~printer:string_of_stm
+  assert_equal expected_output (add_succ stm) ~printer:print_stm_ele_list
 
 let test_add_succ_exception (name : string) stm : test =
   name >:: fun _ -> assert_raises NotSuccPattern (fun () -> add_succ stm)
+
+let test_succ_add (name : string) stm (expected_output : stm) : test =
+  name >:: fun _ ->
+  assert_equal expected_output (succ_add stm) ~printer:print_stm_ele_list
+
+let test_succ_add_exception (name : string) stm : test =
+  name >:: fun _ -> assert_raises NotSuccPattern (fun () -> succ_add stm)
+
+let test_succ_eq (name : string) stm (expected_output : stm) : test =
+  name >:: fun _ ->
+  assert_equal expected_output (succ_eq stm) ~printer:print_stm_ele_list
+
+let test_succ_eq_exception (name : string) stm : test =
+  name >:: fun _ -> assert_raises NotSuccEqPattern (fun () -> succ_eq stm)
 
 (* test for helper function find_zero, find_add*)
 
@@ -514,24 +532,39 @@ let add_mul_zero_tests =
          equiv_1);
   ]
 
-(* let t8 = [ Num "2"; Opr '$'; Num "3"; Opr '+' ] let t8_1 = [ Num "2"; Num
-   "3"; Opr '+'; Opr '$' ] *)
-let stm_succ_1 = make_stm (t8_1, t8) equiv_1
+let t8 = [ Num "2"; Opr '$'; Num "3"; Opr '+' ]
+let t8_1 = [ Num "2"; Num "3"; Opr '+'; Opr '$' ]
+let t8_2 = [ Num "3"; Opr '$'; Num "3"; Opr '+' ]
+let t8_3 = [ Num "2"; Num "3"; Opr '$'; Opr '+' ]
+let stm_succ_1 = make_stm (t8, t8_1) equiv_1
 let stm_succ_11 = make_stm (t8_1, t8_1) equiv_1
+let stm_succ_12 = make_stm (t8_3, t8_1) equiv_1
+let stm_seq_1 = make_stm (t8, t8) equiv_1
+let stm_seq_11 = make_stm (t8_2, t8) equiv_1
 
 (* let t10 = [ Num "2"; Opr '$'; Num "3"; Opr '*'; Num "3"; Opr '$'; Opr '+'
    ] *)
 let t10_1 = [ Num "2"; Num "3"; Opr '*'; Opr '$'; Num "3"; Opr '$'; Opr '+' ]
-let stm_succ_2 = make_stm (t10, t10_1) equiv_1
-let stm_succ_21 = make_stm (t10_1, t10_1) equiv_1
+let t10_11 = [ Num "2"; Num "3"; Opr '*'; Opr '$'; Num "3"; Opr '+'; Opr '$' ]
+let t10_2 = [ Num "3"; Num "3"; Opr '*'; Num "3"; Opr '$'; Opr '+' ]
+let stm_succ_2 = make_stm (t10_1, t10_11) equiv_1
+let stm_succ_21 = make_stm (t10_11, t10_11) equiv_1
+let stm_seq_2 = make_stm (t10, t10) equiv_1
+let stm_seq_21 = make_stm (t10_1, t10) equiv_1
 let t11 = [ Num "2"; Num "3"; Opr '*'; Num "3"; Opr '$'; Opr '+' ]
 let t11_1 = [ Num "2"; Num "3"; Opr '*'; Num "3"; Opr '+'; Opr '$' ]
+let t11_2 = [ Num "2"; Num "3"; Opr '*'; Num "4"; Opr '+' ]
 let stm_succ_3 = make_stm (t11, t11_1) equiv_1
 let stm_succ_31 = make_stm (t11_1, t11_1) equiv_1
+let stm_seq_3 = make_stm (t11, t11) equiv_1
+let stm_seq_31 = make_stm (t11_2, t11) equiv_1
 let t12 = [ Num "2"; Num "3"; Opr '$'; Opr '*' ]
 let stm_succ_4 = make_stm (t12, t12) equiv_1
+let t13 = [ Num "2"; Opr '$'; Num "3"; Num "2"; Opr '*'; Opr '+' ]
+let t13_1 = [ Num "2"; Num "3"; Num "2"; Opr '*'; Opr '+'; Opr '$' ]
+let stm_succ_5 = make_stm (t13, t13_1) equiv_1
+let stm_succ_51 = make_stm (t13_1, t13_1) equiv_1
 
-(* $2*2 *)
 let stm_not_succ =
   make_stm
     ( [ Num "16" ],
@@ -540,11 +573,20 @@ let stm_not_succ =
 
 let succ_tests =
   [
-    test_add_succ "test_add_succ $2+3 -> $(2+3)" stm_succ_1 stm_succ_11;
-    test_add_succ "test_add_succ $2*3+$3 -> $(2*3)+$3" stm_succ_2 stm_succ_21;
+    test_succ_add "test_addtest_succ_add_succ $2+3 -> $(2+3)" stm_succ_1
+      stm_succ_11;
+    test_succ_add "test_addtest_succ_add_succ $2+3*2 -> $(2+3*2)" stm_succ_5
+      stm_succ_51;
+    test_succ_add_exception "test_addtest_succ_add_succ $(2*3)+$(3) " stm_succ_2;
+    test_add_succ "test_add_succ 2+$3 = $(2+3)" stm_succ_12 stm_succ_11;
+    test_add_succ "test_add_succ $(2*3)+ ($3) -> $($(2*3)+3)" stm_succ_2
+      stm_succ_21;
     test_add_succ_exception "test_add_succ_exception 16=3*5+0*1" stm_not_succ;
     test_add_succ "test_add_succ 2*3+$3 -> $(2*3+3)" stm_succ_3 stm_succ_31;
-    test_add_succ_exception "test_add_succ_exception 2*$3" stm_succ_4;
+    test_add_succ_exception "test_add_succ_exception 2*$3" stm_succ_4
+    (* test_succ_eq "test_succ_eq $2+3 -> $3+3" stm_succ_1 stm_seq_11;
+       test_succ_eq "test_succ_eq $2*3+$3 -> $3*3+$3" stm_succ_2 stm_seq_21;
+       test_succ_eq "test_succ_eq 2*3+$3 -> 2*3+4" stm_succ_3 stm_seq_31; *);
   ]
 
 let test_parse (name : string) str (expected_output : technique) : test =
@@ -578,6 +620,7 @@ let suite =
            statement_tests;
            technique_tests;
            add_mul_zero_tests;
+           succ_tests;
          ]
 
 let _ = run_test_tt_main suite

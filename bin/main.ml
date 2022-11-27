@@ -29,12 +29,14 @@ let rec play_game stm =
   print_string "\n> ";
   match next_statement stm (parse (read_line ())) with
   | exception Malformed ->
-      print_endline "Your command is malformed! Please try again.";
+      print_endline "Your command is malformed!";
+      print_endline "Please try again.";
       play_game stm
   | exception NotMatch ->
       print_endline
         "The expression to rewrite is not found or the function to rewrite has \
-         the wrong name! Please try again.";
+         the wrong name!";
+      print_endline " Please try again.";
       play_game stm
   | exception ShowHelp ->
       ANSITerminal.print_string [ ANSITerminal.Bold ]
