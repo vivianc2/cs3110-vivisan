@@ -84,6 +84,12 @@ let rec play_game stm =
          succ b = succ (a+b).";
       print_endline "Please try again.";
       play_game stm
+  | exception NotSuccEqPattern ->
+      print_endline
+        "The expression is not a succ Equal pattern! Valid pattern is a + succ \
+         b = a (b+1).";
+      print_endline "Please try again.";
+      play_game stm
   | exception Quit ->
       print_endline "You have quit the prover. See you next time~";
       exit 0

@@ -59,8 +59,8 @@ val add_succ : stm -> stm
 
 val succ_add : stm -> stm
 (** [succ_add stm] returns equivalent stm that replaces succ(a)+b as succ (a+b)
-    with succ keyword represented as $. If the result is false, then raise
-    NotAddSuccPattern *)
+    or succ(a) + b + c = succ (a+b+c) with succ keyword represented as $. If the
+    result is false, then raise NotAddSuccPattern *)
 
 val succ_eq : stm -> stm
 (** [succ_eq stm] returns the statement that replaces succ (n) with n+1 if n is
