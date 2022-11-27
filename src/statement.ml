@@ -234,6 +234,7 @@ let next_statement stm tech =
           | "mul_zero" -> mul_zero stm
           | "zero_add" -> zero_add stm
           | "zero_mul" -> zero_mul stm
+          | "succ" -> add_succ stm
           | s -> substitute stm (str |> exp_of_string)
         end
       | Ind strlst ->

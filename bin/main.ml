@@ -48,6 +48,25 @@ let rec play_game stm =
       ANSITerminal.print_string
         [ ANSITerminal.red; ANSITerminal.Bold ]
         "\nQ.E.D\n\n"
+  | exception NotAddZeroPattern ->
+      print_endline
+        "The expression is not an add zero pattern! Please try again.";
+      play_game stm
+  | exception NotMulZeroPattern ->
+      print_endline
+        "The expression is not a multiply zero pattern! Please try again.";
+      play_game stm
+  | exception NotZeroAddPattern ->
+      print_endline
+        "The expression is not a zero add pattern! Please try again.";
+      play_game stm
+  | exception NotZeroMulPattern ->
+      print_endline
+        "The expression is not a zero multiply pattern! Please try again.";
+      play_game stm
+  | exception NotSuccPattern ->
+      print_endline "The expression is not a succ pattern! Please try again.";
+      play_game stm
   | exception Quit ->
       print_endline "You quit the prover. See you next time~";
       exit 0
