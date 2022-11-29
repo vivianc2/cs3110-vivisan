@@ -4,13 +4,7 @@
             "equation": {
                 "LHS": "0+n",
                 "RHS": "n"
-            },
-            "equals": [
-                {
-                    "LHS": "",
-                    "RHS": ""
-                }
-            ]
+            }
         }
     ],
     "techniques": "refl, rw [variable_name], rw [functions], functions include add_zero,zero_add,mul_zero,zero_mul,succ,succ_eq"

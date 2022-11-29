@@ -16,7 +16,8 @@ let tuple_of_json j =
 let stm_of_json j =
   make_stm
     (j |> member "equation" |> tuple_of_json)
-    (j |> member "equals" |> to_list |> List.map tuple_of_json)
+    (try j |> member "equals" |> to_list |> List.map tuple_of_json
+     with _ -> [])
 
 let stm_lst_of_json j = j |> member "proofs" |> to_list |> List.map stm_of_json
 let techniques_of_json j = j |> member "techniques" |> to_string
