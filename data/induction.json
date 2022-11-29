@@ -7,5 +7,5 @@
             }
         }
     ],
-    "techniques": "refl, rw [variable_name], rw [functions], functions include add_zero,zero_add,mul_zero,zero_mul,succ,succ_eq"
+    "techniques": "refl, rw, induction"
 }

@@ -1,0 +1,23 @@
+{
+    "proofs": [
+        {
+            "equation": {
+                "LHS": "$($a)",
+                "RHS": "$b"
+            },
+            "equals": [
+                {
+                    "LHS": "$a",
+                    "RHS": "b"
+                }
+            ]
+        },
+        {
+            "equation": {
+                "LHS": "a+($0)",
+                "RHS": "$a"
+            }
+        }
+    ],
+    "techniques": "refl, rw, add_zero : (a+0) = a, add_succ: (a+$b) = $(a+b)"
+}

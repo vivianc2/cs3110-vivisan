@@ -122,7 +122,7 @@ let rec load_file f =
   match Yojson.Basic.from_file f with
   | json ->
       ANSITerminal.print_string [ ANSITerminal.Bold ]
-        "Valid operations include thses techniques: ";
+        "Valid operations include these techniques: ";
       let t = techniques_of_json json in
       ANSITerminal.print_string
         [ ANSITerminal.green; ANSITerminal.Bold ]
@@ -148,7 +148,7 @@ let main () =
     [ ANSITerminal.red; ANSITerminal.Bold ]
     "\n\nWelcome to Mathematical Prover!\n\n";
   print_endline "Please enter the name of the game file you want to load.\n";
-  print_endline "Files available: 1.proofs \n";
+  print_endline "Files available: 1.refl_rw; 2.succ; 3.induction \n";
   print_endline "If you want to quit the game, input quit";
   print_string "> ";
   match read_line () with
