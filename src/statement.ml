@@ -264,8 +264,6 @@ let rec find_succ_n acc = function
         let acc = Num n :: acc in
         find_succ_n acc t
 
-let replace_succ e = e @ [ Num "1"; Opr '+' ]
-
 (* a + succ n = a + (n+1) a n $ + = a n 1 + + *)
 (* a * succ n = a * (n+1) a n s * = a n 1 + * *)
 (* succ n + a = (n+1) + a n s a + = n 1 + a + *)

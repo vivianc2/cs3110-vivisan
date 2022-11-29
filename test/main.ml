@@ -620,6 +620,9 @@ let succ_tests =
       stm_succ_61;
     test_succ_add "test_succ_add 2*3+$2+3*2 -> 2*3+$(2+3*2)" stm_succ_6
       stm_succ_61;
+    test_add_succ "test_succ_add 0+($1) -> $(0+1)"
+      (make_stm ([ Num "0"; Num "1"; Opr '$'; Opr '+' ], []) equiv_1)
+      (make_stm ([ Num "0"; Num "1"; Opr '+'; Opr '$' ], []) equiv_1);
     test_succ_add "test_succ_add $2+3+1 -> $(2+3)+1" stm_succ_7 stm_succ_71;
     test_succ_add_exception "test_succ_add_exception $(2*3)+$(3) " stm_succ_2;
     test_add_succ "test_add_succ 2+$3 = $(2+3)" stm_succ_12 stm_succ_11;
