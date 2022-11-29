@@ -86,15 +86,17 @@ let string_of_exp exp =
                 else
                   infix_of_postfix_helper t [ "(" ^ String.make 1 c ^ x ^ ")" ]
             | y :: z :: s ->
-                if c = '$' then 
+                if c = '$' then
                   infix_of_postfix_helper t
-                  (("(" ^ String.make 1 c ^ y ^ ")") :: z :: s)
+                    (("(" ^ String.make 1 c ^ y ^ ")") :: z :: s)
                 else
-                infix_of_postfix_helper t
-                  (("(" ^ z ^ String.make 1 c ^ y ^ ")") :: s)))
+                  infix_of_postfix_helper t
+                    (("(" ^ z ^ String.make 1 c ^ y ^ ")") :: s)))
   in
   infix_of_postfix_helper exp [] |> List.fold_left (fun acc x -> acc ^ x) ""
 
+(** [compare_exp exp1 exp2] is true if and only if [exp1] and [exp2] are the
+    same expression*)
 let rec compare_exp post1 post2 =
   match (post1, post2) with
   | [], [] -> true

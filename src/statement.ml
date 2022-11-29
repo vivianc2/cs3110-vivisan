@@ -6,6 +6,16 @@ type stm = {
   equiv : (t * t) list;
 }
 
+exception NotReflexive
+exception NotMatch
+exception QED
+exception NotZeroAddPattern
+exception NotZeroMulPattern
+exception NotAddZeroPattern
+exception NotMulZeroPattern
+exception NotSuccPattern
+exception NotSuccEqPattern
+
 let get_curr stm = stm.curr
 let make_stm x y = { curr = [ x ]; equiv = y }
 
@@ -21,8 +31,6 @@ let print_explist explst =
 let string_of_stm stm = print_explist stm.curr
 let string_of_equiv stm = print_explist stm.equiv
 let is_empty stm = stm.curr = [] || stm.curr = [ ([], []) ]
-
-exception NotMatch
 
 let rec substitute_chunk lst exp equiv_exp =
   match (lst, exp) with
@@ -62,15 +70,6 @@ let substitute stm exp =
       match List.find (fun (_, y) -> compare_exp y exp) stm.equiv with
       | equiv_exp, _ -> sub_stm stm equiv_exp
       | exception _ -> raise NotMatch)
-
-exception NotReflexive
-exception QED
-exception NotZeroAddPattern
-exception NotZeroMulPattern
-exception NotAddZeroPattern
-exception NotMulZeroPattern
-exception NotSuccPattern
-exception NotSuccEqPattern
 
 (* [same_list x y] can check whether 0+ is the sublist of both side of
    stm.curr *)
@@ -230,8 +229,8 @@ let succ_helper stm f =
   match stm.curr with
   | [] -> stm
   | (a, b) :: t ->
-      let found, a = f a [] in
-      if found then { stm with curr = (a, b) :: t }
+      let founda, a = f a [] in
+      if founda then { stm with curr = (a, b) :: t }
       else
         let foundb, b = f b [] in
         if foundb then { stm with curr = (a, b) :: t } else stm
@@ -311,21 +310,31 @@ let next_statement stm tech =
           | s -> substitute stm (str |> exp_of_string)
         end
       | Ind strlst ->
-          let var_exp = exp_of_string (List.nth strlst 0) in
-          let d_exp = exp_of_string (List.nth strlst 1) in
-          let d_succ_exp = exp_of_string (List.nth strlst 1 ^ "+1") in
-          let zero = exp_of_string "0" in
-          let base =
-            ( substitute_helper (fst h) var_exp zero,
-              substitute_helper (snd h) var_exp zero )
-          in
-          let hd =
-            ( substitute_helper (fst h) var_exp d_exp,
-              substitute_helper (snd h) var_exp d_exp )
-          in
-          let hd_succ =
-            ( substitute_helper (fst h) var_exp d_succ_exp,
-              substitute_helper (snd h) var_exp d_succ_exp )
-          in
-          { curr = base :: hd_succ :: t; equiv = hd :: stm.equiv }
+          let var = List.nth strlst 0 in
+          if var = "+" || var = "-" || var = "*" || var = "/" || var = "$" then
+            raise NotMatch
+          else
+            let var_exp = exp_of_string var in
+            let d_exp = exp_of_string (List.nth strlst 1) in
+            let d_succ_exp = exp_of_string ("($" ^ List.nth strlst 1 ^ ")") in
+            let zero = exp_of_string "0" in
+            if
+              (not (List.mem (Num var) (fst h)))
+              && not (List.mem (Num var) (snd h))
+            then raise NotMatch
+            else
+              let base =
+                ( substitute_helper (fst h) var_exp zero,
+                  substitute_helper (snd h) var_exp zero )
+              in
+              let hd =
+                ( substitute_helper (fst h) var_exp d_exp,
+                  substitute_helper (snd h) var_exp d_exp )
+              in
+              let hd_succ =
+                ( substitute_helper (fst h) var_exp d_succ_exp,
+                  substitute_helper (snd h) var_exp d_succ_exp )
+              in
+              print_endline ("inductive hypothesis: " ^ print_explist [ hd ]);
+              { curr = base :: hd_succ :: t; equiv = hd :: stm.equiv }
     end

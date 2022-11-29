@@ -7,5 +7,5 @@
             }
         }
     ],
-    "techniques": "refl, rw, induction"
+    "techniques": "refl, rw, induction, add_zero : (a+0) = a, add_succ: (a+$b) = $(a+b)"
 }

@@ -1,0 +1,11 @@
+{
+    "proofs": [
+        {
+            "equation": {
+                "LHS": "(a+b)+c",
+                "RHS": "a+(b+c)"
+            }
+        }
+    ],
+    "techniques": "refl, rw, induction, add_zero : (a+0) = a, add_succ: (a+$b) = $(a+b)\nzero_add: (0+a) = a"
+}

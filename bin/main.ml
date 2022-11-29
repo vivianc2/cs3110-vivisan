@@ -35,9 +35,8 @@ let rec play_game stm tech =
       play_game stm tech
   | exception NotMatch ->
       print_endline
-        "The expression to rewrite is not found or the function to rewrite has \
-         the wrong name!";
-      print_endline " Please try again.";
+        "The expression/function is not found!";
+      print_endline "Please try again.";
       play_game stm tech
   | exception ShowHelp ->
       ANSITerminal.print_string [ ANSITerminal.Bold ]
