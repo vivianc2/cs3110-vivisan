@@ -23,7 +23,7 @@ let stm_lst_of_json j = j |> member "proofs" |> to_list |> List.map stm_of_json
 let techniques_of_json j = j |> member "techniques" |> to_string
 
 (** [play_game f] starts the adventure in file [f]. *)
-let rec play_game stm =
+let rec play_game stm tech =
   ANSITerminal.print_string
     [ ANSITerminal.cyan; ANSITerminal.Bold ]
     (string_of_stm stm);
@@ -32,25 +32,30 @@ let rec play_game stm =
   | exception Malformed ->
       print_endline "Your command is malformed!";
       print_endline "Please try again.";
-      play_game stm
+      play_game stm tech
   | exception NotMatch ->
       print_endline
         "The expression to rewrite is not found or the function to rewrite has \
          the wrong name!";
       print_endline " Please try again.";
-      play_game stm
+      play_game stm tech
   | exception ShowHelp ->
+      ANSITerminal.print_string [ ANSITerminal.Bold ]
+        "Valid operations include these techniques: ";
+      ANSITerminal.print_string
+        [ ANSITerminal.green; ANSITerminal.Bold ]
+        (tech ^ "\n");
       ANSITerminal.print_string [ ANSITerminal.Bold ]
         "The equivalent expressions that you know are:";
       ANSITerminal.print_string
         [ ANSITerminal.green; ANSITerminal.Bold ]
         ("\t" ^ string_of_equiv stm ^ "\n");
-      play_game stm
+      play_game stm tech
   | exception NotReflexive ->
       print_endline "The expression is not reflexive!";
       print_endline " Valid pattern: x=x, x+1 = x+1 and etc.";
       print_endline "Please try again.";
-      play_game stm
+      play_game stm tech
   | exception QED ->
       ANSITerminal.print_string
         [ ANSITerminal.red; ANSITerminal.Bold ]
@@ -60,43 +65,43 @@ let rec play_game stm =
       print_endline
         "Valid pattern is 3+0 or (3+1)+0. Do you mean rw zero_add? Please try \
          again.";
-      play_game stm
+      play_game stm tech
   | exception NotMulZeroPattern ->
       print_endline "The expression is not a multiply zero pattern!";
       print_endline
         "Valid pattern is 3*0, (3+1)*0 and etc. Do you mean rw zero_mul? \
          Please try again.";
-      play_game stm
+      play_game stm tech
   | exception NotZeroAddPattern ->
       print_endline "The expression is not a zero add pattern!";
       print_endline
         "Valid pattern is 0+3 or 0+(3+1). Do you mean rw add_zero? Please try \
          again.";
-      play_game stm
+      play_game stm tech
   | exception NotZeroMulPattern ->
       print_endline "The expression is not a zero multiply pattern!";
       print_endline
         "Valid pattern is 0*3 or 0*(3+1). Do you mean rw zero_mul? Please try \
          again.";
-      play_game stm
+      play_game stm tech
   | exception NotSuccPattern ->
       print_endline
         "The expression is not a succ addition pattern! Valid pattern is a + \
          succ b = succ (a+b).";
       print_endline "Please try again.";
-      play_game stm
+      play_game stm tech
   | exception NotSuccEqPattern ->
       print_endline
         "The expression is not a succ Equal pattern! Valid pattern is a + succ \
          b = a (b+1).";
       print_endline "Please try again.";
-      play_game stm
+      play_game stm tech
   | exception Quit ->
       print_endline "You have quit the prover. See you next time~";
       exit 0
-  | new_stm -> play_game new_stm
+  | new_stm -> play_game new_stm tech
 
-let rec go_through_stm_lst stm_lst =
+let rec go_through_stm_lst stm_lst tech =
   match stm_lst with
   | [] ->
       print_endline "You've finished all the proofs. Great job!";
@@ -110,13 +115,13 @@ let rec go_through_stm_lst stm_lst =
       ANSITerminal.print_string
         [ ANSITerminal.green; ANSITerminal.Bold ]
         ("\t" ^ string_of_equiv h ^ "\n");
-      match play_game h with
+      match play_game h tech with
       | exception Retry ->
           print_endline "";
-          go_through_stm_lst stm_lst
+          go_through_stm_lst stm_lst tech
       | _ ->
           incr count;
-          go_through_stm_lst t)
+          go_through_stm_lst t tech)
 
 let rec load_file f =
   match Yojson.Basic.from_file f with
@@ -132,7 +137,7 @@ let rec load_file f =
       ANSITerminal.print_string
         [ ANSITerminal.green; ANSITerminal.Bold ]
         "help, quit, retry\n\n";
-      go_through_stm_lst (stm_lst_of_json json)
+      go_through_stm_lst (stm_lst_of_json json) (techniques_of_json json)
   | exception e -> (
       print_endline
         "This input file doesn't exist. Please enter the correct file name \

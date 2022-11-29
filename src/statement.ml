@@ -308,7 +308,7 @@ let next_statement stm tech =
           | "mul_zero" -> mul_zero stm
           | "zero_add" -> zero_add stm
           | "zero_mul" -> zero_mul stm
-          | "succ" -> add_succ stm
+          | "add_succ" -> add_succ stm
           | "succ_eq" -> succ_eq stm
           | s -> substitute stm (str |> exp_of_string)
         end

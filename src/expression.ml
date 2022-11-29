@@ -86,6 +86,10 @@ let string_of_exp exp =
                 else
                   infix_of_postfix_helper t [ "(" ^ String.make 1 c ^ x ^ ")" ]
             | y :: z :: s ->
+                if c = '$' then 
+                  infix_of_postfix_helper t
+                  (("(" ^ String.make 1 c ^ y ^ ")") :: z :: s)
+                else
                 infix_of_postfix_helper t
                   (("(" ^ z ^ String.make 1 c ^ y ^ ")") :: s)))
   in
