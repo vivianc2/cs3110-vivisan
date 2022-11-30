@@ -17,10 +17,14 @@ exception Malformed
 (** Raised when a malformed technique is parsed. *)
 
 exception ShowHelp
-(** Raised xxx. *)
+(** Raised when the user needs to show help, which are the valid operations and
+    the equivalent expressions. *)
 
 exception Quit
+(** Raised when the user wants to quit the game. *)
+
 exception Retry
+(** Raised when the user wants to retry the current level of the game. *)
 
 val parse : string -> technique
 (** [parse str] parses a player's input into a [technique].*)
