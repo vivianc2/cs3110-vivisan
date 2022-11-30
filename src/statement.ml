@@ -221,19 +221,22 @@ let rec find_add_succ e before =
   | [] -> raise NotSuccPattern
   | Opr '$' :: Opr '+' :: t ->
       let e1, e2 = split_e before [] before in
-      (true, List.rev e1 @ e2 @ (Opr '+' :: Opr '$' :: t))
+      List.rev e1 @ e2 @ (Opr '+' :: Opr '$' :: t)
   | Num n :: t -> find_add_succ t (before @ [ Num n ])
   | Opr c :: t -> find_add_succ t (before @ [ Opr c ])
 
 let succ_helper stm f =
   match stm.curr with
   | [] -> stm
-  | (a, b) :: t ->
-      let founda, a = f a [] in
-      if founda then { stm with curr = (a, b) :: t }
-      else
-        let foundb, b = f b [] in
-        if foundb then { stm with curr = (a, b) :: t } else stm
+  | (a, b) :: t -> (
+      try
+        let a = f a [] in
+        { stm with curr = (a, b) :: t }
+      with _ -> (
+        try
+          let b = f b [] in
+          { stm with curr = (a, b) :: t }
+        with _ -> stm))
 
 let add_succ stm = succ_helper stm find_add_succ
 
@@ -245,7 +248,7 @@ let rec find_succ_add e before =
         raise NotSuccPattern
       else
         let e1, e2 = split_e before [] before in
-        (true, List.rev e1 @ e2 @ t @ [ Opr '$' ])
+        List.rev e1 @ e2 @ t @ [ Opr '$' ]
   | Num n :: t -> find_succ_add t (before @ [ Num n ])
   | Opr c :: t -> find_succ_add t (before @ [ Opr c ])
 
@@ -280,9 +283,9 @@ let rec succ_eq_check e before =
   | [] -> raise NotSuccEqPattern
   | Opr '$' :: t -> begin
       match succ_addition_pattern e with
-      | true, _ -> (true, before @ [ Num "1"; Opr '+' ] @ t)
+      | true, _ -> before @ [ Num "1"; Opr '+' ] @ t
       | false, true ->
-          (true, before @ [ Num "1"; Opr '+' ] @ t (* raise NotSuccEqPattern *))
+          before @ [ Num "1"; Opr '+' ] @ t (* raise NotSuccEqPattern *)
       | false, false -> raise NotSuccEqPattern
     end
   | Opr n :: t -> succ_eq_check t (before @ [ Opr n ])
