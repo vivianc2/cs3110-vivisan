@@ -19,5 +19,5 @@
             }
         }
     ],
-    "techniques": "refl, rw, add_zero : (a+0) = a, add_succ: (a+$b) = $(a+b)"
+    "techniques": "refl, rw [variable], rw add_zero : (a+0) = a, rw zero_add : (0+a) = a, rw add_succ: (a+$b) = $(a+b)"
 }

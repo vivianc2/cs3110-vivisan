@@ -49,5 +49,5 @@
             ]
         }
     ],
-    "techniques": "refl, rw"
+    "techniques": "refl, rw [variable]"
 }
