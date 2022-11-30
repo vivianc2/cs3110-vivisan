@@ -2,16 +2,22 @@
     "proofs": [
         {
             "equation": {
+                "LHS": "(a+b)+c",
+                "RHS": "a+(b+c)"
+            }
+        },
+        {
+            "equation": {
                 "LHS": "0+n",
                 "RHS": "n"
             }
         },
         {
             "equation": {
-                "LHS": "(a+b)+c",
-                "RHS": "a+(b+c)"
+                "LHS": "$a+b",
+                "RHS": "$(a+b)"
             }
         }
     ],
-    "techniques": "refl, rw [variable], induction [n] with [d] [hd], rw add_zero : (a+0) = a, rw zero_add : (0+a) = a, rw add_succ: (a+$b) = $(a+b)"
+    "techniques": "refl, rw [variable], induction [n] with [d] [hd], rw add_zero : (a+0) = a, rw zero_add : (0+a) = a, rw add_succ: (a+$b) = $(a+b), rw succ_add: ($a+b) = $(a+b)"
 }
