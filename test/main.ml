@@ -241,8 +241,8 @@ let print_stm_ele_list (stm : stm) =
   List.map (fun (h, _) -> h) curr |> List.hd |> print_element_list
 
 let test_add_succ (name : string) stm (expected_output : stm) : test =
-  name >:: fun _ ->
-  assert_equal expected_output (add_succ stm) ~printer:print_stm_ele_list
+  name >:: fun _ -> assert_equal expected_output (add_succ stm)
+(* ~printer:print_stm_ele_list *)
 
 let test_add_succ_exception (name : string) stm : test =
   name >:: fun _ -> assert_raises NotSuccPattern (fun () -> add_succ stm)
@@ -686,13 +686,6 @@ let technique_tests =
     test_parse_exception "test parse quit x -> malform" "quit x" malform_err;
   ]
 
-let trial =
-  [
-    test_add_succ "test_add_succ 0+($1) -> $(0+1)"
-      (make_stm ([], [ Num "0"; Num "1"; Opr '$'; Opr '+' ]) equiv_1)
-      (make_stm ([], [ Num "0"; Num "1"; Opr '+'; Opr '$' ]) equiv_1);
-  ]
-
 let suite =
   "test suite for Prover"
   >::: List.flatten
@@ -701,7 +694,8 @@ let suite =
            statement_tests;
            technique_tests;
            add_mul_zero_tests;
-           trial (* succ_tests; *);
+           (* trial *)
+           succ_tests;
          ]
 
 let _ = run_test_tt_main suite

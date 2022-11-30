@@ -216,35 +216,16 @@ let rec split_e e e1 e2 =
       else split_e t e1 e2
   | Opr c :: t -> split_e t (Opr c :: e1) (List.tl e2)
 
-let string_rev str =
-  let rec aux idx =
-    match idx with
-    | 0 -> Char.escaped str.[0]
-    | _ -> Char.escaped str.[idx] ^ aux (idx - 1)
-  in
-  aux (String.length str - 1)
-
-let print_element_list e =
-  let s =
-    List.fold_left
-      (fun acc x ->
-        match x with
-        | Opr c -> String.make 1 c ^ acc
-        | Num n -> n ^ acc)
-      "" e
-  in
-  string_rev s
-
 let rec find_add_succ e before =
-  print_endline "call ";
+  (* print_endline "call "; *)
   match e with
   | [] -> (false, [])
   | Opr '$' :: Opr '+' :: t ->
-      print_endline "$ ";
+      (* print_endline "$ "; *)
       let e1, e2 = split_e (List.rev before) [] (List.rev before) in
 
       let return = List.rev e1 @ e2 @ (Opr '+' :: Opr '$' :: t) in
-      print_endline (print_element_list return);
+      (* print_endline (print_element_list return); *)
       (true, return)
   | Num n :: t -> find_add_succ t (Num n :: before)
   | Opr c :: t -> find_add_succ t (Opr c :: before)
@@ -257,11 +238,7 @@ let succ_helper stm f =
       if found then { stm with curr = (fa, b) :: t }
       else
         let foundb, fb = f b [] in
-        if foundb then
-          (* print_endline; *)
-          (* make_stm ([], []) [] *)
-          (* raise NotSuccPattern *)
-          { stm with curr = (a, fb) :: t }
+        if foundb then { stm with curr = (a, fb) :: t }
         else raise NotSuccPattern
 
 let add_succ stm = succ_helper stm find_add_succ
@@ -323,6 +300,7 @@ let next_statement stm tech =
           | "zero_add" -> zero_add stm
           | "zero_mul" -> zero_mul stm
           | "add_succ" -> add_succ stm
+          | "succ_add" -> succ_add stm
           | "succ_eq" -> succ_eq stm
           | s -> substitute stm (str |> exp_of_string)
         end

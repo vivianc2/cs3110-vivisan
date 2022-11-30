@@ -34,8 +34,7 @@ let rec play_game stm tech =
       print_endline "Please try again.";
       play_game stm tech
   | exception NotMatch ->
-      print_endline
-        "The expression/function is not found!";
+      print_endline "The expression/function is not found!";
       print_endline "Please try again.";
       play_game stm tech
   | exception ShowHelp ->
@@ -86,7 +85,7 @@ let rec play_game stm tech =
   | exception NotSuccPattern ->
       print_endline
         "The expression is not a succ addition pattern! Valid pattern is a + \
-         succ b = succ (a+b).";
+         succ b = succ (a+b) or succ a + b = succ (a+b).";
       print_endline "Please try again.";
       play_game stm tech
   | exception NotSuccEqPattern ->
