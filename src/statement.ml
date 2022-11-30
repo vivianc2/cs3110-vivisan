@@ -216,55 +216,69 @@ let rec split_e e e1 e2 =
       else split_e t e1 e2
   | Opr c :: t -> split_e t (Opr c :: e1) (List.tl e2)
 
+let string_rev str =
+  let rec aux idx =
+    match idx with
+    | 0 -> Char.escaped str.[0]
+    | _ -> Char.escaped str.[idx] ^ aux (idx - 1)
+  in
+  aux (String.length str - 1)
+
+let print_element_list e =
+  let s =
+    List.fold_left
+      (fun acc x ->
+        match x with
+        | Opr c -> String.make 1 c ^ acc
+        | Num n -> n ^ acc)
+      "" e
+  in
+  string_rev s
+
 let rec find_add_succ e before =
+  print_endline "call ";
   match e with
-  | [] -> raise NotSuccPattern
+  | [] -> (false, [])
   | Opr '$' :: Opr '+' :: t ->
-      let e1, e2 = split_e before [] before in
-      List.rev e1 @ e2 @ (Opr '+' :: Opr '$' :: t)
-  | Num n :: t -> find_add_succ t (before @ [ Num n ])
-  | Opr c :: t -> find_add_succ t (before @ [ Opr c ])
+      print_endline "$ ";
+      let e1, e2 = split_e (List.rev before) [] (List.rev before) in
+
+      let return = List.rev e1 @ e2 @ (Opr '+' :: Opr '$' :: t) in
+      print_endline (print_element_list return);
+      (true, return)
+  | Num n :: t -> find_add_succ t (Num n :: before)
+  | Opr c :: t -> find_add_succ t (Opr c :: before)
 
 let succ_helper stm f =
   match stm.curr with
-  | [] -> stm
-  | (a, b) :: t -> (
-      try
-        let a = f a [] in
-        { stm with curr = (a, b) :: t }
-      with _ -> (
-        try
-          let b = f b [] in
-          { stm with curr = (a, b) :: t }
-        with _ -> stm))
+  | [] -> raise NotSuccPattern
+  | (a, b) :: t ->
+      let found, fa = f a [] in
+      if found then { stm with curr = (fa, b) :: t }
+      else
+        let foundb, fb = f b [] in
+        if foundb then
+          (* print_endline; *)
+          (* make_stm ([], []) [] *)
+          (* raise NotSuccPattern *)
+          { stm with curr = (a, fb) :: t }
+        else raise NotSuccPattern
 
 let add_succ stm = succ_helper stm find_add_succ
 
 let rec find_succ_add e before =
   match e with
-  | [] -> raise NotSuccPattern
+  | [] -> (false, []) (* raise NotSuccPattern *)
   | Opr '$' :: t ->
-      if before <> [] && List.(before |> rev |> hd) = Opr '*' then
-        raise NotSuccPattern
+      if before <> [] && List.(before |> rev |> hd) = Opr '*' then (false, [])
+        (* raise NotSuccPattern *)
       else
         let e1, e2 = split_e before [] before in
-        List.rev e1 @ e2 @ t @ [ Opr '$' ]
+        (true, List.rev e1 @ e2 @ t @ [ Opr '$' ])
   | Num n :: t -> find_succ_add t (before @ [ Num n ])
   | Opr c :: t -> find_succ_add t (before @ [ Opr c ])
 
 let succ_add stm = succ_helper stm find_succ_add
-
-(** succ n = n+1 *)
-let rec find_succ_n acc = function
-  | [] -> acc
-  | Opr c :: t ->
-      let acc = Opr c :: acc in
-      find_succ_n acc t
-  | Num n :: t ->
-      if opr_counter 0 0 (List.rev acc) |> counter_condition then acc
-      else
-        let acc = Num n :: acc in
-        find_succ_n acc t
 
 (* a + succ n = a + (n+1) a n $ + = a n 1 + + *)
 (* a * succ n = a * (n+1) a n s * = a n 1 + * *)
@@ -280,12 +294,12 @@ let succ_addition_pattern e =
 
 let rec succ_eq_check e before =
   match e with
-  | [] -> raise NotSuccEqPattern
+  | [] -> (false, [])
   | Opr '$' :: t -> begin
       match succ_addition_pattern e with
-      | true, _ -> before @ [ Num "1"; Opr '+' ] @ t
+      | true, _ -> (true, before @ [ Num "1"; Opr '+' ] @ t)
       | false, true ->
-          before @ [ Num "1"; Opr '+' ] @ t (* raise NotSuccEqPattern *)
+          (true, before @ [ Num "1"; Opr '+' ] @ t (* raise NotSuccEqPattern *))
       | false, false -> raise NotSuccEqPattern
     end
   | Opr n :: t -> succ_eq_check t (before @ [ Opr n ])
