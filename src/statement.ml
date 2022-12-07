@@ -230,13 +230,11 @@ let succ_helper stm f =
   | [] -> stm
   | (a, b) :: t -> (
       try
-        let a = f a [] in
-        { stm with curr = (a, b) :: t }
-      with _ -> (
-        try
-          let b = f b [] in
-          { stm with curr = (a, b) :: t }
-        with _ -> stm))
+        let fa = f a [] in
+        { stm with curr = (fa, b) :: t }
+      with _ ->
+        let fb = f b [] in
+        { stm with curr = (a, fb) :: t })
 
 let add_succ stm = succ_helper stm find_add_succ
 
