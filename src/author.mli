@@ -7,7 +7,7 @@
 
 (** CS 3110 Fall 2022 Assignment A2 Adventure
 
-    @author Vivian Chen (yc833) *)
+    @author Vivian Fan (xf37) Santiago Lai (zl345) Vivian Chen (yc833) *)
 
 (************************************************************
 
@@ -22,6 +22,8 @@
    list of other students with whom I collaborated, and a brief summary of that
    collaboration:
 
+   - Vivian Fan 
+   - Santiago Lai 
    - Vivian Chen
 
  ************************************************************)
