@@ -19,6 +19,7 @@ exception NotSuccEqPattern
 let get_curr stm = stm.curr
 let make_stm x y = { curr = [ x ]; equiv = y }
 
+(** [print_explist explst] converts the expression list into a string*)
 let print_explist explst =
   explst
   |> List.map (fun x ->
@@ -71,16 +72,15 @@ let substitute stm exp =
       | equiv_exp, _ -> sub_stm stm equiv_exp
       | exception _ -> raise NotMatch)
 
-(* [same_list x y] can check whether 0+ is the sublist of both side of
-   stm.curr *)
+(** [same_list x y] can check whether 0+ is the sublist of both side of stm.curr *)
 let rec same_list x y =
   match (x, y) with
   | [], _ -> true
   | _, [] -> false
   | h :: t, h' :: t' -> h = h' && same_list t t'
 
-(* [sublist x y acc] returns whether stm contains +0 or not, acc which is the
-   equivalent of y in y+0, and the part of stm after +0 *)
+(** [sublist x y acc] returns whether stm contains +0 or not, acc which is the
+    equivalent of y in y+0, and the part of stm after +0 *)
 let rec sublist x y acc =
   match (x, y) with
   | [], _ -> (true, acc, List.tl y)
@@ -132,6 +132,9 @@ let rec opr_counter count_num count_opr = function
 let counter_condition = function
   | count_num, count_opr -> count_num = count_opr + 1
 
+(** [find_opr x bop acc] returns (find_flag, after,before) while find_flag shows
+    whether the bop is found in x or not; after is sub-expression after bop
+    character; before is part before bop char *)
 let rec find_opr (x : Expression.t) (bop : element) (acc : Expression.t)
     (before : Expression.t) =
   match x with
@@ -172,6 +175,9 @@ let zero_add stm =
           | true, e -> { stm with curr = (a, e) :: t }
           | false, _ -> raise NotZeroAddPattern))
 
+(** [find_zero_mul x bop before_h] returns (find_flag, new_exp) while find_flap
+    represents whether the pattern is find or not; and new_exp is how the
+    expression x will be updated if the pattern is found *)
 let rec find_zero_mul x (bop : element) before_h =
   match x with
   | [] -> (false, [])
@@ -203,6 +209,8 @@ let zero_mul stm =
 (** add_succ (a b : mynat) : a + succ(b) = succ(a + b)*)
 let add_succ_aux stm1 stm2 = stm1 @ stm2 @ [ Opr '$' ]
 
+(** [split_e e e1 e2] will separate expression e into subexpressions e1 and e2
+    which follow the rule for expressions*)
 let rec split_e e e1 e2 =
   match e with
   | [] -> (e1, e2)
@@ -216,6 +224,9 @@ let rec split_e e e1 e2 =
       else split_e t e1 e2
   | Opr c :: t -> split_e t (Opr c :: e1) (List.tl e2)
 
+(** [find_add_succ e before] returns (found_flag, new_exp) which found_flag
+    stands for whether the succ_add pattern is found in e or not, new_exp
+    represents the new e to replace *)
 let rec find_add_succ e before =
   (* print_endline "call "; *)
   match e with
@@ -230,6 +241,8 @@ let rec find_add_succ e before =
   | Num n :: t -> find_add_succ t (Num n :: before)
   | Opr c :: t -> find_add_succ t (Opr c :: before)
 
+(** [succ_helper stm f] returns new stm after applying [f] which is
+    find_add_succ or find_succ_add on stm*)
 let succ_helper stm f =
   match stm.curr with
   | [] -> raise NotSuccPattern
@@ -243,6 +256,9 @@ let succ_helper stm f =
 
 let add_succ stm = succ_helper stm find_add_succ
 
+(** [find_succ_add e before] returns (found_flag, new_exp) which found_flag
+    stands for whether the succ_add pattern is found in e or not, new_exp
+    represents the new e to replace *)
 let rec find_succ_add e before =
   match e with
   | [] -> (false, []) (* raise NotSuccPattern *)
@@ -261,6 +277,10 @@ let succ_add stm = succ_helper stm find_succ_add
 (* a * succ n = a * (n+1) a n s * = a n 1 + * *)
 (* succ n + a = (n+1) + a n s a + = n 1 + a + *)
 (* succ n * a = (n+1) * a n s a * = n 1 + a * *)
+
+(** [succ_addition_pattern e] returns (add_succ_flag, succ_add_flag). If an
+    add_succ pattern is found in e, then the flag is true, else flase. If
+    succ_add pattern is found, then the second flag becomes true*)
 let succ_addition_pattern e =
   match find_add_succ e [] with
   | e -> (true, false)
@@ -269,6 +289,9 @@ let succ_addition_pattern e =
       | e -> (false, true)
       | exception NotSuccPattern -> (false, false))
 
+(** [succ_eq_check e before] returns (flag, new_exp) if succ equal pattern is
+    found, then flag is true and new_exp represented the updated expression;
+    otherwise new_exp is e*)
 let rec succ_eq_check e before =
   match e with
   | [] -> (false, [])

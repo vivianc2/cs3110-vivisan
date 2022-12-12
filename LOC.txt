@@ -1,0 +1,8 @@
+Our project is completed by a three person team. 
+
+Our test files have meet the standard for over 50 test cases, which in total
+composites about 50% of the total project LOC. This is within the set limit for 
+length of test cases.
+
+Meanwhile, since our project includes both data fiels and main program in OCaml, 
+we have factor out data files into separate json files.

@@ -1,1 +1,3 @@
-Our project has not used any packages yet. Therefore, running "dune build" will be sufficient to build the project.
+Our project has not used any packages yet. Therefore, running "dune build" will 
+be sufficient to build the project. Running "make play" will allow users to 
+practice and play with our proof examples.
