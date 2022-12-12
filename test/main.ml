@@ -203,9 +203,6 @@ let test_is_empty (name : string) stm (expected_output : bool) : test =
   name >:: fun _ ->
   assert_equal expected_output (is_empty stm) ~printer:print_bool
 
-(* let test_is_valid (name : string) stm (expected_output : bool) : test = name
-   >:: fun _ -> assert_equal expected_output (is_valid stm) *)
-
 let test_substitute (name : string) stm e (expected_output : stm) : test =
   name >:: fun _ ->
   assert_equal expected_output (substitute stm e) ~printer:string_of_stm
@@ -292,14 +289,6 @@ let print_test_tuple_2 = function
   | false, a, b ->
       let str = "false" in
       str ^ " " ^ string_of_exp a
-
-(* let test_find_zero (name : string) lst1 lst2 (expected_output : bool *
-   Expression.t) : test = name >:: fun _ -> assert_equal expected_output
-   (find_zero lst1 lst2) ~printer:print_test_tuple *)
-
-(* let test_find_add (name : string) lst1 lst2 lst3 (expected_output : bool *
-   Expression.t * Expression.t) : test = name >:: fun _ -> assert_equal
-   expected_output (find_add lst1 lst2 lst3) ~printer:print_test_tuple_2 *)
 
 (* y=x+3 -> 3y = 3*(x+3) *)
 let curr_left_1 = [ Num "3"; Num "y"; Opr '*' ]
