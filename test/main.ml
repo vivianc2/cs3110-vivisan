@@ -1,3 +1,22 @@
+(* Test Plan:
+
+   Automatically tested: The functions in expression, statement, and technique
+   that can be found in the mli files (except induction). These are tested
+   through glass box testing, where we look at the different paths of the
+   functions and create examples in OUnit tests. This demonstrates that the
+   functions we have do what the specifications say they do. When we use bisect,
+   it shows that we have an average of 82% coverage. When we checked the ones
+   not covered, we decided to manually test them.
+
+   Manually tested: The functions in bin/main and the induction function (The
+   system runs with make play, reads the json files of the input's choice, and
+   moves to the next level when the current level is finished.) These are tested
+   through black box testing, where we start the prover as a user and go through
+   the process, going through or levels and files, and trying all kinds of
+   mistakes we can think of. This demonstrates that our prover can be played
+   successfully, gives help when needed, and gives corresponding cues when the
+   user types in incorrect commands. *)
+
 open OUnit2
 open Prover
 open Expression
@@ -141,11 +160,8 @@ let expression_tests =
       "(0/(((2+3)*4)+1))" t7;
     test_infix_of_string "test_infix_of_string -> $2+3" "$2+3" t9;
     test_infix_of_string "test_infix_of_string -> $(2+3)" "$(2+3)" t9_1;
-    (* error *)
-    (* test_infix_of_string "test_infix_of_string empty -> []" "" []; *)
     test_exp_of_infix "test_exp_of_infix 2*(1+3)" t1 t2;
     test_exp_of_infix "test_exp_of_infix (1+(2+3)+(4))" t3 t4;
-    (* error fixed *)
     test_exp_of_infix "test_exp_of_infix 0/((2+3)*4+1)" t5 t6;
     test_exp_of_infix "test_exp_of_infix $ 2+3" t9 t8;
     test_exp_of_infix "test_exp_of_infix $(2+3)" t9_1 t8_1;
@@ -174,8 +190,6 @@ let expression_tests =
     test_compare_exp "compare exp t4 t3 -> false" t4 t3 false;
     test_compare_exp "compare exp t4 t4 -> true" t4 t4 true;
   ]
-
-(* let print_str x = x *)
 
 let test_string_of_stm (name : string) stm (expected_output : string) : test =
   name >:: fun _ ->
@@ -684,6 +698,14 @@ let technique_tests =
     test_parse_exception "test parse quit -> raise Quit" "quit"
       Prover.Technique.Quit;
     test_parse_exception "test parse quit x -> malform" "quit x" malform_err;
+    test_parse_exception "test parse nothing -> malform" "" malform_err;
+    test_parse_exception "test parse not provide argument -> malform" "rw "
+      malform_err;
+    test_parse_exception
+      "test parse incorrect num of arg for induction -> malform"
+      "induction a with b" malform_err;
+    test_parse_exception "test parse retry but provide arg -> malform" "retry a"
+      malform_err;
   ]
 
 let suite =
@@ -694,7 +716,6 @@ let suite =
            statement_tests;
            technique_tests;
            add_mul_zero_tests;
-           (* trial *)
            succ_tests;
          ]
 
