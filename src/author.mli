@@ -5,7 +5,7 @@
    or use it for commercial purposes.
  ************************************************************)
 
-(** CS 3110 Fall 2022 Assignment A2 Adventure
+(** CS 3110 Fall 2022 Final Project
 
     @author Vivian Fan (xf37) Santiago Lai (zl345) Vivian Chen (yc833) *)
 

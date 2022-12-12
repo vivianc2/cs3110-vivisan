@@ -1,3 +1,10 @@
+(** Representation of mathematical expressions.
+
+    This module represents the expressions that the user could apply in their
+    proof. It contains the methods to convert user input to expressions.*)
+
+(** The element in expressions, which is represented by string if the element is
+    a number or a variable, and a char if the element is an operation*)
 type element =
   | Num of string
   | Opr of char
