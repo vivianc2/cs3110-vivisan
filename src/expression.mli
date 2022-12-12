@@ -15,7 +15,7 @@ type t = element list
     backward*)
 
 exception Malformed
-(** Raised when a malformed technique is parsed. *)
+(** Raised when a malformed technique is used. *)
 
 val infix_of_string : string -> t
 (** [infix_of_stirng s] is the infix expression of string [s]*)
