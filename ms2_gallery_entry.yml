@@ -1,0 +1,26 @@
+---
+# Members of your group.
+group:
+  - name: Santiago Lai
+    netid: zl345
+  - name: Vivian Chen
+    netid: yc833
+  - name: Vivian Fan
+    netid: xf37
+# Your PM.
+pm:
+  name: Elliot Overholt
+  netid: eao56
+# Set to false if you don't want your gallery entry to be public.
+publish: false
+# Pithy title
+title: "The Mathematical Prover"
+# OK if this is a Cornell Github link, but public gallery viewers won't be able to see it.
+git-repo: "https://github.coecis.cornell.edu/yc833/cs3110-vivisan"
+# If you have no demo screencast, replace the url string with an empty string ""
+demo-video-url: ""
+# Write a short, attention-grabbing description of your project.
+desc: >
+  Our project is an interactive mathematical prover. It allows users to perform basic mathematical proofs with fundamental inputs, e.g. rw, refl and so on. Then the prover will automatically implements the coresponding behaviors, including substituting variables, comparing eqaulity of two expressions and so on. Our future work is to extend the project to achieve weak induction and build a more user-friendly interface.
+  
+
