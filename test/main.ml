@@ -1,21 +1,25 @@
 (* Test Plan:
 
    Automatically tested: The functions in expression, statement, and technique
-   that can be found in the mli files (except induction). These are tested
-   through glass box testing, where we look at the different paths of the
-   functions and create examples in OUnit tests. This demonstrates that the
-   functions we have do what the specifications say they do. When we use bisect,
-   it shows that we have an average of 82% coverage. When we checked the ones
-   not covered, we decided to manually test them.
+   that can be found in the mli files. These are tested through glass box
+   testing, where we look at the different paths of the functions and create
+   examples in OUnit tests. This demonstrates that the functions we have do what
+   the specifications say they do. When we use bisect, it shows that we have an
+   average of 82% coverage. When we checked the ones not covered, we decided to
+   manually test them.
 
-   Manually tested: The functions in bin/main and the induction function (The
+   Manually tested: The functions in bin/main and the induction function. The
    system runs with make play, reads the json files of the input's choice, and
-   moves to the next level when the current level is finished.) These are tested
-   through black box testing, where we start the prover as a user and go through
-   the process, going through or levels and files, and trying all kinds of
-   mistakes we can think of. This demonstrates that our prover can be played
-   successfully, gives help when needed, and gives corresponding cues when the
-   user types in incorrect commands. *)
+   moves to the next level when the current level is finished. We manually
+   tested induction because induction is just spliting the statement into two
+   (the base case and the inductive step), and all the functions that are used
+   in the induction part are the ones we've tested before, so we only need to
+   test that it does split it into two cases. These are tested through black box
+   testing, where we start the prover as a user and go through the process,
+   going through or levels and files, and trying all kinds of mistakes we can
+   think of. This demonstrates that our prover can be played successfully, gives
+   help when needed, and gives corresponding cues when the user types in
+   incorrect commands. *)
 
 open OUnit2
 open Prover
@@ -384,9 +388,9 @@ let statement_tests =
   [
     test_string_of_stm "test_string_of_stm 3y=3*(x+3)" stm_1
       "(3*y) = (3*(x+3)); ";
+    test_is_empty "test_is_empty stm_1_2 -> false" stm_1_2 false;
     (* notice equiv will output a space after the string & also a ;*)
     test_string_of_equiv "test_string_of_equiv y = x+3 " stm_1 "y = (x+3); ";
-    (* error fixed*)
     test_is_empty "test_is_empty empty -> true" (make_stm ([], []) []) true;
     test_is_empty "test_is_empty stm_1_1 -> false" stm_1_1 false;
     test_substitute "test substitute y=x+3 -> 3y = 3(x+3) " stm_1_1 e_1 stm_1_2;
@@ -536,7 +540,7 @@ let add_mul_zero_tests =
   ]
 
 (* let t8 = [ Num "2"; Opr '$'; Num "3"; Opr '+' ] *)
-(* let t8_1 = [ Num "2"; Num "3"; Opr '+'; Opr '$' ] *)
+let t8_1 = [ Num "2"; Num "3"; Opr '+'; Opr '$' ]
 let t8_2 = [ Num "2"; Num "1"; Opr '+'; Num "3"; Opr '+' ]
 let t8_3 = [ Num "2"; Num "3"; Opr '$'; Opr '+' ]
 let t8_4 = [ Num "2"; Opr '$'; Num "3"; Opr '+'; Num "1"; Opr '+' ]
@@ -690,11 +694,14 @@ let technique_tests =
     test_parse_exception "test parse nothing -> malform" "" malform_err;
     test_parse_exception "test parse not provide argument -> malform" "rw "
       malform_err;
+    test_parse_exception "test parse incorrect arg for induction -> malform"
+      "induction a b c" malform_err;
     test_parse_exception
       "test parse incorrect num of arg for induction -> malform"
       "induction a with b" malform_err;
     test_parse_exception "test parse retry but provide arg -> malform" "retry a"
       malform_err;
+    test_parse_exception "test parse one word -> malform" "a" malform_err;
   ]
 
 let suite =
